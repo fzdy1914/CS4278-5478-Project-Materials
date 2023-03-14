@@ -1,6 +1,7 @@
 import random
 
 import numpy as np
+from gym import spaces
 from gym_duckietown import logger
 from . import DuckietownEnv
 
@@ -22,6 +23,15 @@ class GuidedBotEnv(DuckietownEnv):
     ):
         DuckietownEnv.__init__(self, **kwargs)
         logger.info('using GuidedBotEnvEnv')
+        self.observation_space = spaces.Tuple([
+            spaces.Box(
+                low=0,
+                high=255,
+                shape=(self.camera_height, self.camera_width, 3),
+                dtype=np.uint8
+            ),
+            spaces.Discrete(2),
+        ])
 
     def generate_goal_tile(self):
         self.start_location = self.get_grid_coords(self.cur_pos)
@@ -61,7 +71,7 @@ class GuidedBotEnv(DuckietownEnv):
     def reset(self):
         obs = DuckietownEnv.reset(self)
         self.generate_goal_tile()
-        return (obs, self.guide)
+        return obs, self.guide
 
     def step(self, action):
         obs, reward, done, info = DuckietownEnv.step(self, action)
