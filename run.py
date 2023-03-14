@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 import pyglet
 from gym_duckietown.envs import DuckietownEnv
+from gym_duckietown.envs import GuidedBotEnv
 from pyglet.window import key
 import sys
 import cv2
@@ -34,19 +35,19 @@ parser.add_argument('--start-tile', '-st', default="1,13", type=str, help="two n
 parser.add_argument('--goal-tile', '-gt', default="3,3", type=str, help="two numbers separated by a comma")
 parser.add_argument('--control_path', default='./map4_0_seed2_start_1,13_goal_3,3.txt', type=str,
                     help="the control file to run")
-parser.add_argument('--manual', default=False, type=str2bool, help="whether to manually control the robot")
+parser.add_argument('--manual', default=True, type=str2bool, help="whether to manually control the robot")
 args = parser.parse_args()
 
 
 # simulator instantiation
-env = DuckietownEnv(
+env = GuidedBotEnv(
     domain_rand=False,
-    max_steps=1500,
+    max_steps=15000,
     map_name=args.map_name,
-    seed=args.seed,
-    user_tile_start=args.start_tile,
-    goal_tile=args.goal_tile,
-    randomize_maps_on_reset=False
+    # seed=args.seed,
+    # user_tile_start=args.start_tile,
+    # goal_tile=args.goal_tile,
+    randomize_maps_on_reset=True
 )
 
 # obs = env.reset() # WARNING: never call this function during testing
