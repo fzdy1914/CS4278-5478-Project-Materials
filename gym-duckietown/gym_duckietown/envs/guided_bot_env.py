@@ -1,8 +1,10 @@
 import random
 
 import numpy as np
-from gym import spaces
+from gymnasium import spaces
 from gym_duckietown import logger
+from gymnasium.wrappers.compatibility import LegacyEnv
+
 from . import DuckietownEnv
 
 DIR_TO_NUM = {
@@ -11,7 +13,7 @@ DIR_TO_NUM = {
     "right:": 2,
 }
 
-class GuidedBotEnv(DuckietownEnv):
+class GuidedBotEnv(DuckietownEnv, LegacyEnv):
     """
     Wrapper to control the simulator using velocity and steering angle
     instead of differential drive motor velocities
@@ -21,21 +23,21 @@ class GuidedBotEnv(DuckietownEnv):
         self,
         **kwargs
     ):
+        LegacyEnv.__init__(self)
         DuckietownEnv.__init__(self, **kwargs)
         logger.info('using GuidedBotEnvEnv')
         self.observation_space = spaces.Tuple([
             spaces.Box(
                 low=0,
                 high=255,
-                shape=(self.camera_height, self.camera_width, 3),
+                shape=(480, 640, 3),
                 dtype=np.uint8
             ),
-            spaces.Discrete(2),
+            spaces.Discrete(3),
         ])
 
     def generate_goal_tile(self):
         self.start_location = self.get_grid_coords(self.cur_pos)
-        print(self.start_location)
 
         if self.cur_angle > 7 / 4 * np.pi or self.cur_angle <= 1 / 4 * np.pi:
             forward = (1, 0)
@@ -63,20 +65,25 @@ class GuidedBotEnv(DuckietownEnv):
                     candidate.append((guide, tile['coords']))
                     break
 
+        if len(candidate) == 0:
+            return False
+
         idx = np.random.random_integers(0, len(candidate)-1)
         self.guide, self.goal_location = candidate[idx]
 
-        return self.guide, self.goal_location
+        return True
 
     def reset(self):
         obs = DuckietownEnv.reset(self)
-        self.generate_goal_tile()
+        if not self.generate_goal_tile():
+            return self.reset()
+
         return obs, self.guide
 
     def step(self, action):
         obs, reward, done, info = DuckietownEnv.step(self, action)
 
-        if reward == -1000:
+        if reward < -10:
             reward = -10
 
         if self.get_grid_coords(self.cur_pos) != self.start_location:

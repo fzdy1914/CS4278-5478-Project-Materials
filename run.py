@@ -2,7 +2,6 @@ import argparse
 
 import numpy as np
 import pyglet
-from gym_duckietown.envs import DuckietownEnv
 from gym_duckietown.envs import GuidedBotEnv
 from pyglet.window import key
 import sys
