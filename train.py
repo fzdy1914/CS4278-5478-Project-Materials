@@ -1,4 +1,7 @@
 import argparse
+
+from ray.tune.logger import pretty_print
+
 from gym_duckietown.wrappers import NormalizeWrapper, ResizeWrapper
 from gymnasium.wrappers import EnvCompatibility
 import os
@@ -93,7 +96,7 @@ class TorchCustomModel(TorchModelV2, nn.Module):
 def launch_and_wrap_env(ctx):
     env = GuidedBotEnv(
         domain_rand=False,
-        max_steps=10000,
+        max_steps=100,
         map_name="map1_0",
         randomize_maps_on_reset=True
     )
@@ -109,7 +112,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(f"Running with following CLI options: {args}")
 
-    ray.init(local_mode=args.local_mode)
+    ray.init()
 
     # Can also register the env creator function explicitly with:
     # register_env("corridor", lambda config: SimpleCorridor(config))
@@ -124,20 +127,18 @@ if __name__ == "__main__":
         # or "corridor" if registered above
         .environment("MyDuckietown")
         .framework("torch")
-        .rollouts(num_rollout_workers=1)
+        .rollouts(num_rollout_workers=6, create_env_on_local_worker=True)
         .training(
             model={
                 "custom_model": "my_model",
             }
         )
         # Use GPUs iff `RLLIB_NUM_GPUS` env var set to > 0.
-        .resources(num_gpus=int(os.environ.get("RLLIB_NUM_GPUS", "0")))
+        .resources(num_gpus=1)
     )
 
     stop = {
         "training_iteration": args.stop_iters,
-        "timesteps_total": args.stop_timesteps,
-        "episode_reward_mean": args.stop_reward,
     }
 
     if args.no_tune:
@@ -151,7 +152,9 @@ if __name__ == "__main__":
         # run manual training loop and print results after each iteration
         for _ in range(args.stop_iters):
             result = algo.train()
+            print(pretty_print(result))
             checkpoint_dir = algo.save()
+            print(checkpoint_dir)
         algo.stop()
     else:
         # automated run with Tune and grid search and TensorBoard

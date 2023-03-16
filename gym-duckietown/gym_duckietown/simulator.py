@@ -1476,7 +1476,7 @@ class Simulator(gym.Env):
             msg = 'Stopping the simulator because we reached max_steps = %s' % self.max_steps
             logger.info(msg)
             done = True
-            reward = 0
+            reward = -10
             done_code = 'max-steps-reached'
         else:
             done = False
