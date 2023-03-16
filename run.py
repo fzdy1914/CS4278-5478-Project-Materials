@@ -94,6 +94,9 @@ if args.manual:
         print(f"current pose = {info['curr_pos']}, next action = {obs[1]} step count = {env.unwrapped.step_count}, step reward = {reward:.3f}")
         env.render()
 
+        if done:
+            exit()
+
     pyglet.clock.schedule_interval(update, 1.0 / env.unwrapped.frame_rate)
     pyglet.app.run()
 

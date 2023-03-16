@@ -36,6 +36,8 @@ class ConGuidedBotEnv(DuckietownEnv, LegacyEnv):
             ),
             spaces.Discrete(3),
         ])
+        self.tile_step_count = 0
+        self.max_tile_step_count = 100
 
     def generate_goal_tile(self, pose):
         self.start_location = self.get_grid_coords(pose)
@@ -76,6 +78,8 @@ class ConGuidedBotEnv(DuckietownEnv, LegacyEnv):
 
     def reset(self):
         obs = DuckietownEnv.reset(self)
+        self.tile_step_count = 0
+
         if not self.generate_goal_tile(self.cur_pos):
             return self.reset()
 
@@ -83,6 +87,11 @@ class ConGuidedBotEnv(DuckietownEnv, LegacyEnv):
 
     def step(self, action):
         obs, reward, done, info = DuckietownEnv.step(self, action)
+
+        self.tile_step_count += 1
+        if self.tile_step_count > self.max_tile_step_count:
+            done = True
+            reward = 0
 
         if reward < -10:
             reward = -10
@@ -94,6 +103,7 @@ class ConGuidedBotEnv(DuckietownEnv, LegacyEnv):
                 reward = 51
                 if not self.generate_goal_tile(self.cur_pos):
                     done = True
+                self.tile_step_count = 0
             else:
                 reward = -10
                 done = True
