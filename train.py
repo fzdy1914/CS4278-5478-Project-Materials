@@ -148,10 +148,10 @@ if __name__ == "__main__":
         print("Running manual train loop without Ray Tune.")
         # use fixed learning rate instead of grid search (needs tune)
         config.lr = 5e-5
-        # config.train_batch_size = 4096
-        # config.gamma = 0.99
-        # config.evaluation_interval = 25
-        # config.evaluation_num_episodes = 5
+        config.train_batch_size = 4096
+        config.gamma = 0.99
+        config.evaluation_interval = 25
+        config.evaluation_num_episodes = 5
 
         algo = config.build()
         # run manual training loop and print results after each iteration
