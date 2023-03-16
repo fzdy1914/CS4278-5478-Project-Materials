@@ -1,6 +1,5 @@
 from gym_duckietown.envs import GuidedBotEnv
-from gym_duckietown.wrappers import NormalizeWrapper, ResizeWrapper
-from gymnasium.spaces import Discrete
+from gym_duckietown.wrappers import NormalizeWrapper, ResizeWrapper, StackWrapper
 from gymnasium.wrappers import EnvCompatibility
 from ray.rllib.utils import check_env
 
@@ -15,6 +14,7 @@ def launch_and_wrap_env(ctx):
 
     env = EnvCompatibility(env)
     env = ResizeWrapper(env)
+    env = StackWrapper(env)
     env = NormalizeWrapper(env)
 
     return env
@@ -22,7 +22,5 @@ def launch_and_wrap_env(ctx):
 env = launch_and_wrap_env(None)
 result = env.reset()
 obs, info = result
-
-print(Discrete(2).contains(1))
 
 check_env(launch_and_wrap_env(None))

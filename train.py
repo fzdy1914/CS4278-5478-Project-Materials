@@ -2,9 +2,8 @@ import argparse
 
 from ray.tune.logger import pretty_print
 
-from gym_duckietown.wrappers import NormalizeWrapper, ResizeWrapper
+from gym_duckietown.wrappers import NormalizeWrapper, ResizeWrapper, StackWrapper
 from gymnasium.wrappers import EnvCompatibility
-import os
 
 import ray
 from ray import air, tune
@@ -58,7 +57,7 @@ class TorchCustomModel(TorchModelV2, nn.Module):
 
         self._convs = nn.Sequential(
             nn.ZeroPad2d((2, 2, 2, 2)),
-            nn.Conv2d(3, 32, kernel_size=8, stride=4),
+            nn.Conv2d(12, 32, kernel_size=8, stride=4),
             nn.LeakyReLU(),
             nn.BatchNorm2d(32),
             nn.ZeroPad2d((1, 2, 1, 2)),
@@ -103,6 +102,7 @@ def launch_and_wrap_env(ctx):
 
     env = EnvCompatibility(env)
     env = ResizeWrapper(env)
+    env = StackWrapper(env)
     env = NormalizeWrapper(env)
 
     return env
@@ -147,7 +147,12 @@ if __name__ == "__main__":
             raise ValueError("Only support --run PPO with --no-tune.")
         print("Running manual train loop without Ray Tune.")
         # use fixed learning rate instead of grid search (needs tune)
-        config.lr = 1e-3
+        config.lr = 5e-5
+        # config.train_batch_size = 4096
+        # config.gamma = 0.99
+        # config.evaluation_interval = 25
+        # config.evaluation_num_episodes = 5
+
         algo = config.build()
         # run manual training loop and print results after each iteration
         for _ in range(args.stop_iters):
