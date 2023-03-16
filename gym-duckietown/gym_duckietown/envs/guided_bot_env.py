@@ -88,7 +88,7 @@ class GuidedBotEnv(DuckietownEnv, LegacyEnv):
 
         if self.get_grid_coords(self.cur_pos) != self.start_location:
             if self.get_grid_coords(self.cur_pos) == self.goal_location:
-                reward = 10
+                reward = 50
             else:
                 reward = -10
             done = True

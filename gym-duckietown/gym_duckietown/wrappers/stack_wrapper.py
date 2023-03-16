@@ -12,7 +12,6 @@ class StackWrapper(gym.ObservationWrapper):
         # For vectors, the output is still a vector, just concatenated.
         self.buffer_axis = len(obs_space_shape_list) - 1
         obs_space_shape_list[self.buffer_axis] *= obs_buffer_depth
-        print(obs_space_shape_list)
 
         limit_low = self.observation_space[0].low[0, 0, 0]
         limit_high = self.observation_space[0].high[0, 0, 0]

@@ -10,7 +10,7 @@ class NormalizeWrapper(gymnasium.ObservationWrapper):
         self.obs_hi = self.observation_space[0].high[0, 0, 0]
         obs_shape = self.observation_space[0].shape
         self.observation_space = spaces.Tuple([
-            spaces.Box(0.0, 1.0, obs_shape, dtype=np.float32),
+            spaces.Box(0.0, 1.0, obs_shape, dtype=np.float64),
             spaces.Discrete(3),
         ])
 

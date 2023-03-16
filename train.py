@@ -148,7 +148,7 @@ if __name__ == "__main__":
         print("Running manual train loop without Ray Tune.")
         # use fixed learning rate instead of grid search (needs tune)
         config.lr = 5e-5
-        config.train_batch_size = 4096
+        config.train_batch_size = 2048
         config.gamma = 0.99
         config.evaluation_interval = 25
         config.evaluation_num_episodes = 5
@@ -157,8 +157,8 @@ if __name__ == "__main__":
         # run manual training loop and print results after each iteration
         for _ in range(args.stop_iters):
             result = algo.train()
-            print(pretty_print(result))
             checkpoint_dir = algo.save()
+            print(result["episode_reward_mean"])
             print(checkpoint_dir)
         algo.stop()
     else:
