@@ -93,4 +93,7 @@ class GuidedBotEnv(DuckietownEnv, LegacyEnv):
                 reward = -10
             done = True
 
+        if not done:
+            reward -= 1
+
         return (obs, self.guide), reward, done, info
