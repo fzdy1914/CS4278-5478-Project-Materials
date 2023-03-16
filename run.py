@@ -2,7 +2,7 @@ import argparse
 
 import numpy as np
 import pyglet
-from gym_duckietown.envs import GuidedBotEnv
+from gym_duckietown.envs import GuidedBotEnv, ConGuidedBotEnv
 from pyglet.window import key
 import sys
 import cv2
@@ -39,7 +39,7 @@ args = parser.parse_args()
 
 
 # simulator instantiation
-env = GuidedBotEnv(
+env = ConGuidedBotEnv(
     domain_rand=False,
     max_steps=15000,
     map_name=args.map_name,
@@ -91,8 +91,7 @@ if args.manual:
             action *= 3
 
         obs, reward, done, info = env.step(action)
-        print(f"current pose = {info['curr_pos']}, step count = {env.unwrapped.step_count}, step reward = {reward:.3f}")
-
+        print(f"current pose = {info['curr_pos']}, next action = {obs[1]} step count = {env.unwrapped.step_count}, step reward = {reward:.3f}")
         env.render()
 
     pyglet.clock.schedule_interval(update, 1.0 / env.unwrapped.frame_rate)
