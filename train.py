@@ -13,7 +13,7 @@ from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
 from ray.rllib.utils.test_utils import check_learning_achieved
 from ray.tune.registry import register_env
 
-from gym_duckietown.envs import GuidedBotEnv
+from gym_duckietown.envs import ConGuidedBotEnv
 
 import torch
 from torch import nn
@@ -93,9 +93,9 @@ class TorchCustomModel(TorchModelV2, nn.Module):
 
 
 def launch_and_wrap_env(ctx):
-    env = GuidedBotEnv(
+    env = ConGuidedBotEnv(
         domain_rand=False,
-        max_steps=100,
+        max_steps=1000,
         map_name="map1_0",
         randomize_maps_on_reset=True
     )
@@ -154,11 +154,13 @@ if __name__ == "__main__":
         config.evaluation_num_episodes = 5
 
         algo = config.build()
+        algo.restore("D:\\ray_results\\checkpoint_001790")
         # run manual training loop and print results after each iteration
         for _ in range(args.stop_iters):
             result = algo.train()
-            checkpoint_dir = algo.save()
-            print(result["episode_reward_mean"])
+            checkpoint_dir = algo.save("D:\\ray_results")
+            print("episode_reward_mean", result["episode_reward_mean"])
+            print("episode_len_mean", result["episode_len_mean"])
             print(checkpoint_dir)
         algo.stop()
     else:
