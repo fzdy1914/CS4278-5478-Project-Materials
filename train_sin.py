@@ -84,7 +84,7 @@ class TorchCustomModel(TorchModelV2, nn.Module):
     def forward(self, input_dict, state, seq_lens):
         _cnn_feature = self._convs(input_dict["obs"][0].permute(0, 3, 1, 2))
         self._feature = torch.cat((_cnn_feature.flatten(1), input_dict["obs"][1]), dim=1)
-        return self._policy(self._feature), []
+        return torch.cat((torch.ones((self._feature.shape[0], 1)), self._policy(self._feature)), 1), []
 
     def value_function(self):
         return self._value(self._feature).reshape([-1])

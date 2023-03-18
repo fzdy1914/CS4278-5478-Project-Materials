@@ -20,7 +20,5 @@ def launch_and_wrap_env(ctx):
     return env
 
 env = launch_and_wrap_env(None)
-result = env.reset()
-obs, info = result
 
 check_env(launch_and_wrap_env(None))
