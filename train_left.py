@@ -1,22 +1,15 @@
 import argparse
 
-from ray.tune.logger import pretty_print
-
-from gym_duckietown.wrappers import NormalizeWrapper, ResizeWrapper, StackWrapper
+from gym_duckietown.new_wrappers import NormalizeWrapper, ResizeWrapper, StackWrapper
 from gymnasium.wrappers import EnvCompatibility
 
 import ray
 from ray import air, tune
 from ray.rllib.algorithms.ppo import PPOConfig
-from ray.rllib.models import ModelCatalog
-from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
 from ray.rllib.utils.test_utils import check_learning_achieved
 from ray.tune.registry import register_env
 
-from gym_duckietown.envs import ConGuidedBotEnv
-
-import torch
-from torch import nn
+from gym_duckietown.envs import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -46,55 +39,11 @@ parser.add_argument(
 )
 
 
-class TorchCustomModel(TorchModelV2, nn.Module):
-    """Example of a PyTorch custom model that just delegates to a fc-net."""
-
-    def __init__(self, obs_space, action_space, num_outputs, model_config, name):
-        TorchModelV2.__init__(
-            self, obs_space, action_space, num_outputs, model_config, name
-        )
-        nn.Module.__init__(self)
-
-        self._convs = nn.Sequential(
-            nn.ZeroPad2d((2, 2, 2, 2)),
-            nn.Conv2d(12, 32, kernel_size=8, stride=4),
-            nn.LeakyReLU(),
-            nn.BatchNorm2d(32),
-            nn.ZeroPad2d((1, 2, 1, 2)),
-            nn.Conv2d(32, 32, kernel_size=4, stride=2),
-            nn.LeakyReLU(),
-            nn.BatchNorm2d(32),
-            nn.Conv2d(32, 256, kernel_size=11, stride=1),
-            nn.LeakyReLU(),
-        )
-
-        self._policy = nn.Sequential(
-            nn.Linear(in_features=256 + 3, out_features=32),
-            nn.LeakyReLU(),
-            nn.Linear(in_features=32, out_features=1),
-            nn.Tanh(),
-        )
-
-        self._value = nn.Sequential(
-            nn.Linear(in_features=256 + 3, out_features=32),
-            nn.LeakyReLU(),
-            nn.Linear(in_features=32, out_features=1),
-        )
-
-    def forward(self, input_dict, state, seq_lens):
-        _cnn_feature = self._convs(input_dict["obs"][0].permute(0, 3, 1, 2))
-        self._feature = torch.cat((_cnn_feature.flatten(1), input_dict["obs"][1]), dim=1)
-        p = self._policy(self._feature)
-        return torch.cat((torch.ones_like(p), p), 1), []
-
-    def value_function(self):
-        return self._value(self._feature).reshape([-1])
-
-
 def launch_and_wrap_env(ctx):
-    env = ConGuidedBotEnv(
+    env = DirectedBotEnv(
+        direction=1,
         domain_rand=False,
-        max_steps=1000,
+        max_steps=100,
         map_name="map1_0",
         randomize_maps_on_reset=True
     )
@@ -115,9 +64,6 @@ if __name__ == "__main__":
 
     # Can also register the env creator function explicitly with:
     # register_env("corridor", lambda config: SimpleCorridor(config))
-    ModelCatalog.register_custom_model(
-        "my_model", TorchCustomModel
-    )
 
     register_env('MyDuckietown', launch_and_wrap_env)
 
@@ -127,11 +73,7 @@ if __name__ == "__main__":
         .environment("MyDuckietown")
         .framework("torch")
         .rollouts(num_rollout_workers=6, create_env_on_local_worker=True)
-        .training(
-            model={
-                "custom_model": "my_model",
-            }
-        )
+        .training()
         # Use GPUs iff `RLLIB_NUM_GPUS` env var set to > 0.
         .resources(num_gpus=1)
     )
@@ -153,11 +95,11 @@ if __name__ == "__main__":
         config.evaluation_num_episodes = 5
 
         algo = config.build()
-        # algo.restore("D:\\ray_results\\checkpoint_001790")
+        algo.restore("D:\\left_result\\checkpoint_000105")
         # run manual training loop and print results after each iteration
         for _ in range(args.stop_iters):
             result = algo.train()
-            checkpoint_dir = algo.save("D:\\d_result")
+            checkpoint_dir = algo.save("D:\\left_result")
             print("episode_reward_mean", result["episode_reward_mean"])
             print("episode_len_mean", result["episode_len_mean"])
             print(checkpoint_dir)
@@ -175,5 +117,4 @@ if __name__ == "__main__":
         if args.as_test:
             print("Checking if learning goals were achieved")
             check_learning_achieved(results, args.stop_reward)
-
     ray.shutdown()

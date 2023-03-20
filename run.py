@@ -2,7 +2,7 @@ import argparse
 
 import numpy as np
 import pyglet
-from gym_duckietown.envs import GuidedBotEnv, ConGuidedBotEnv
+from gym_duckietown.envs import *
 from pyglet.window import key
 import sys
 import cv2
@@ -28,7 +28,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--max_steps', type=int, default=1500, help='max_steps')
 
 # You should set them to different map name and seed accordingly
-parser.add_argument('--map-name', '-m', default="map4_0", type=str)
+parser.add_argument('--map-name', '-m', default="map5_3", type=str)
 parser.add_argument('--seed', '-s', default=2, type=int)
 parser.add_argument('--start-tile', '-st', default="1,13", type=str, help="two numbers separated by a comma")
 parser.add_argument('--goal-tile', '-gt', default="3,3", type=str, help="two numbers separated by a comma")
@@ -39,9 +39,10 @@ args = parser.parse_args()
 
 
 # simulator instantiation
-env = ConGuidedBotEnv(
+env = DirectedBotEnv(
+    direction=1,
     domain_rand=False,
-    max_steps=15000,
+    max_steps=1500,
     map_name=args.map_name,
     # seed=args.seed,
     # user_tile_start=args.start_tile,
@@ -91,11 +92,9 @@ if args.manual:
             action *= 3
 
         obs, reward, done, info = env.step(action)
-        print(f"current pose = {info['curr_pos']}, next action = {obs[1]} step count = {env.unwrapped.step_count}, step reward = {reward:.3f}")
-        env.render()
+        print(f"current pose = {info['curr_pos']}, step count = {env.unwrapped.step_count}, step reward = {reward:.3f}")
 
-        if done:
-            exit()
+        env.render()
 
     pyglet.clock.schedule_interval(update, 1.0 / env.unwrapped.frame_rate)
     pyglet.app.run()
@@ -117,4 +116,3 @@ else:
                actions, delimiter=',')
 
 env.close()
-

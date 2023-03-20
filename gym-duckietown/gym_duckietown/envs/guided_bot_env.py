@@ -68,6 +68,15 @@ class GuidedBotEnv(DuckietownEnv, LegacyEnv):
         if len(candidate) == 0:
             return False
 
+        can = False
+        for guide, _ in candidate:
+            if guide == 1:
+                can = True
+                break
+
+        if not can:
+            return False
+
         idx = np.random.random_integers(0, len(candidate)-1)
         self.guide, self.goal_location = candidate[idx]
 
@@ -88,7 +97,7 @@ class GuidedBotEnv(DuckietownEnv, LegacyEnv):
 
         if self.get_grid_coords(self.cur_pos) != self.start_location:
             if self.get_grid_coords(self.cur_pos) == self.goal_location:
-                reward = 50
+                reward = 10
             else:
                 reward = -10
             done = True

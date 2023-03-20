@@ -37,7 +37,7 @@ class ConGuidedBotEnv(DuckietownEnv, LegacyEnv):
             spaces.Discrete(3),
         ])
         self.tile_step_count = 0
-        self.max_tile_step_count = 25
+        self.max_tile_step_count = 50000
 
     def generate_goal_tile(self, pose):
         self.start_location = self.get_grid_coords(pose)
@@ -100,7 +100,7 @@ class ConGuidedBotEnv(DuckietownEnv, LegacyEnv):
 
         if self.get_grid_coords(self.cur_pos) != self.start_location:
             if self.get_grid_coords(self.cur_pos) == self.goal_location:
-                reward = 51
+                reward = 11
                 if not self.generate_goal_tile(self.cur_pos):
                     done = True
                 self.tile_step_count = 0

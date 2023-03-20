@@ -13,8 +13,7 @@ DIR_TO_NUM = {
     "right:": 2,
 }
 
-
-class SinGuidedBotEnv(DuckietownEnv, LegacyEnv):
+class DirectedBotEnv(DuckietownEnv, LegacyEnv):
     """
     Wrapper to control the simulator using velocity and steering angle
     instead of differential drive motor velocities
@@ -22,30 +21,23 @@ class SinGuidedBotEnv(DuckietownEnv, LegacyEnv):
 
     def __init__(
         self,
+        direction=0,
         **kwargs
     ):
+        self.direction=direction
         LegacyEnv.__init__(self)
         DuckietownEnv.__init__(self, **kwargs)
         logger.info('using GuidedBotEnvEnv')
-        self.observation_space = spaces.Tuple([
-            spaces.Box(
+        self.observation_space = spaces.Box(
                 low=0,
                 high=255,
                 shape=(480, 640, 3),
                 dtype=np.uint8
-            ),
-            spaces.Discrete(3),
-        ])
-        self.action_space = spaces.Box(
-            low=np.array([-1]),
-            high=np.array([1]),
-            dtype=np.float64
-        )
-        self.tile_step_count = 0
-        self.max_tile_step_count = 25
+            )
 
-    def generate_goal_tile(self, pose):
-        self.start_location = self.get_grid_coords(pose)
+
+    def generate_goal_tile(self):
+        self.start_location = self.get_grid_coords(self.cur_pos)
 
         if self.cur_angle > 7 / 4 * np.pi or self.cur_angle <= 1 / 4 * np.pi:
             forward = (1, 0)
@@ -64,56 +56,45 @@ class SinGuidedBotEnv(DuckietownEnv, LegacyEnv):
             left = (1, 0)
             right = (-1, 0)
 
-        candidate = []
+        can = False
         for guide, (x, y) in [(0, forward), (1, left), (2, right)]:
+            if guide != self.direction:
+                continue
+
             new_pos_x = self.start_location[0] + x
             new_pos_y = self.start_location[1] + y
             for tile in self.drivable_tiles:
                 if tile['coords'] == (new_pos_x, new_pos_y):
-                    candidate.append((guide, tile['coords']))
+                    self.goal_location = (new_pos_x, new_pos_y)
+                    can = True
                     break
 
-        if len(candidate) == 0:
+        if not can:
             return False
-
-        idx = np.random.random_integers(0, len(candidate)-1)
-        self.guide, self.goal_location = candidate[idx]
 
         return True
 
     def reset(self):
         obs = DuckietownEnv.reset(self)
-        self.tile_step_count = 0
-
-        if not self.generate_goal_tile(self.cur_pos):
+        if not self.generate_goal_tile():
             return self.reset()
 
-        return obs, self.guide
+        return obs
 
     def step(self, action):
-        obs, reward, done, info = DuckietownEnv.step(self, np.array([1, action[0]]))
-
-        self.tile_step_count += 1
-        if self.tile_step_count > self.max_tile_step_count:
-            done = True
-            reward = 0
+        obs, reward, done, info = DuckietownEnv.step(self, action)
 
         if reward < -10:
             reward = -10
-        if done:
-            return (obs, self.guide), reward, done, info
 
         if self.get_grid_coords(self.cur_pos) != self.start_location:
             if self.get_grid_coords(self.cur_pos) == self.goal_location:
-                reward = 51
-                if not self.generate_goal_tile(self.cur_pos):
-                    done = True
-                self.tile_step_count = 0
+                reward = 10
             else:
                 reward = -10
-                done = True
+            done = True
 
         if not done:
             reward -= 1
 
-        return (obs, self.guide), reward, done, info
+        return obs, reward, done, info

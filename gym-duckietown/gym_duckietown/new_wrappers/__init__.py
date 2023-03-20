@@ -1,0 +1,4 @@
+from gym_duckietown.new_wrappers.normalize_wrapper import NormalizeWrapper
+from gym_duckietown.new_wrappers.resize_wrapper import ResizeWrapper
+from gym_duckietown.new_wrappers.stack_wrapper import StackWrapper
+

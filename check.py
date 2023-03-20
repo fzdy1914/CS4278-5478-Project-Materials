@@ -1,11 +1,12 @@
-from gym_duckietown.envs import SinGuidedBotEnv
-from gym_duckietown.wrappers import NormalizeWrapper, ResizeWrapper, StackWrapper
+from gym_duckietown.envs import *
+from gym_duckietown.new_wrappers import NormalizeWrapper, ResizeWrapper, StackWrapper
 from gymnasium.wrappers import EnvCompatibility
 from ray.rllib.utils import check_env
 
 
 def launch_and_wrap_env(ctx):
-    env = SinGuidedBotEnv(
+    env = DirectedBotEnv(
+        direction=1,
         domain_rand=False,
         max_steps=10000,
         map_name="map1_0",
