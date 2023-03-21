@@ -22,11 +22,11 @@ def identity(x):
 
 
 def ceil(x):
-    return math.ceil(x) - random.random() * uncertainty
+    return math.ceil(x) - random.random() * uncertainty - 0.0001
 
 
 def floor(x):
-    return math.floor(x) + random.random() * uncertainty
+    return math.floor(x) + random.random() * uncertainty + 0.0001
 
 
 def new_ceil(x):
