@@ -40,7 +40,7 @@ args = parser.parse_args()
 
 # simulator instantiation
 env = DirectedBotEnv(
-    direction=1,
+    direction=2,
     domain_rand=False,
     max_steps=1500,
     map_name=args.map_name,
@@ -95,6 +95,9 @@ if args.manual:
         print(f"current pose = {info['curr_pos']}, step count = {env.unwrapped.step_count}, step reward = {reward:.3f}")
 
         env.render()
+        if done:
+            env.reset()
+            env.render()
 
     pyglet.clock.schedule_interval(update, 1.0 / env.unwrapped.frame_rate)
     pyglet.app.run()

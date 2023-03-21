@@ -27,6 +27,14 @@ def floor(x):
     return math.floor(x) + 0.1
 
 
+def new_ceil(x):
+    return math.ceil(x) - 0.25
+
+
+def new_floor(x):
+    return math.floor(x) + 0.25
+
+
 class DirectedBotEnv(DuckietownEnv, LegacyEnv):
     """
     Wrapper to control the simulator using velocity and steering angle
@@ -79,7 +87,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
 
             action = (0, -1)
             op_x = floor
-            op_y = identity
+            op_y = new_ceil
         elif 1 / 4 * np.pi < self.cur_angle <= 3 / 4 * np.pi:
             if kind == 'curve_right':
                 return False
@@ -87,7 +95,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 return False
 
             action = (-1, 0)
-            op_x = identity
+            op_x = new_ceil
             op_y = ceil
         elif 3 / 4 * np.pi < self.cur_angle <= 5 / 4 * np.pi:
             if kind == 'curve_right' and angle != 2:
@@ -97,14 +105,14 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
 
             action = (0, 1)
             op_x = ceil
-            op_y = identity
+            op_y = new_floor
         else:
             if kind == 'curve_right' and angle != 3:
                 return False
             if kind == 'curve_left' and angle != 0:
                 return False
             action = (1, 0)
-            op_x = identity
+            op_x = new_floor
             op_y = floor
 
         new_pos_x = start_location[0] + action[0]
@@ -141,8 +149,8 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 return False
 
             action = (0, 1)
-            op_x = floor
-            op_y = identity
+            op_x = math.floor
+            op_y = new_ceil
         elif 1 / 4 * np.pi < self.cur_angle <= 3 / 4 * np.pi:
             if kind == 'curve_right' and angle != 2:
                 return False
@@ -150,8 +158,8 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 return False
 
             action = (1, 0)
-            op_x = identity
-            op_y = ceil
+            op_x = new_ceil
+            op_y = math.ceil
         elif 3 / 4 * np.pi < self.cur_angle <= 5 / 4 * np.pi:
             if kind == 'curve_right' and angle != 3:
                 return False
@@ -159,16 +167,16 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 return False
 
             action = (0, -1)
-            op_x = ceil
-            op_y = identity
+            op_x = math.ceil
+            op_y = new_floor
         else:
             if kind == 'curve_right':
                 return False
             if kind == 'curve_left' and angle != 1:
                 return False
             action = (-1, 0)
-            op_x = identity
-            op_y = floor
+            op_x = new_floor
+            op_y = math.floor
 
         new_pos_x = start_location[0] + action[0]
         new_pos_y = start_location[1] + action[1]
@@ -189,6 +197,9 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
         elif self.direction == 2:
             if not self.generate_goal_tile_right():
                 return self.reset()
+
+        if not self._valid_pose(self.cur_pos, self.cur_angle):
+            return self.reset()
 
         return obs
 
