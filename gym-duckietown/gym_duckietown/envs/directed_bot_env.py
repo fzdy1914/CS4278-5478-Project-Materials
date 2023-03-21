@@ -37,6 +37,14 @@ def new_floor(x):
     return math.floor(x) + 0.25 + (random.random() - 0.5) * uncertainty
 
 
+def goal_ceil(x):
+    return math.ceil(x) - 0.25
+
+
+def goal_floor(x):
+    return math.floor(x) + 0.25
+
+
 class DirectedBotEnv(DuckietownEnv, LegacyEnv):
     """
     Wrapper to control the simulator using velocity and steering angle
@@ -49,8 +57,11 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
         **kwargs
     ):
         self.direction = direction
+        my_mode = True
+        if self.direction == 0:
+            my_mode = False
         LegacyEnv.__init__(self)
-        DuckietownEnv.__init__(self, **kwargs)
+        DuckietownEnv.__init__(self, my_mode=my_mode, **kwargs)
         logger.info('using DirectedBotEnv')
         if self.direction == 2:
             self.action_space = spaces.Box(
@@ -60,7 +71,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
             )
         elif self.direction == 1:
             self.action_space = spaces.Box(
-                low=np.array([.5, -0.5 * np.pi]),
+                low=np.array([.25, -0.5 * np.pi]),
                 high=np.array([1, np.pi]),
                 dtype=np.float64
             )
@@ -90,20 +101,20 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
         if self.cur_angle > 7 / 4 * np.pi or self.cur_angle <= 1 / 4 * np.pi:
             action = (1, 0)
             ideal_op_x = math.floor
-            ideal_op_y = new_ceil
+            ideal_op_y = goal_ceil
 
         elif 1 / 4 * np.pi < self.cur_angle <= 3 / 4 * np.pi:
             action = (0, -1)
-            ideal_op_x = new_ceil
+            ideal_op_x = goal_ceil
             ideal_op_y = math.ceil
 
         elif 3 / 4 * np.pi < self.cur_angle <= 5 / 4 * np.pi:
             action = (-1, 0)
             ideal_op_x = math.ceil
-            ideal_op_y = new_floor
+            ideal_op_y = goal_floor
         else:
             action = (0, 1)
-            ideal_op_x = new_floor
+            ideal_op_x = goal_floor
             ideal_op_y = math.floor
 
         new_pos_x = start_location[0] + action[0]
@@ -139,7 +150,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 return False
 
             action = (0, -1)
-            ideal_op_x = new_ceil
+            ideal_op_x = goal_ceil
             ideal_op_y = math.ceil
 
             op_x = floor
@@ -152,7 +163,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
 
             action = (-1, 0)
             ideal_op_x = math.ceil
-            ideal_op_y = new_floor
+            ideal_op_y = goal_floor
 
             op_x = new_ceil
             op_y = ceil
@@ -163,7 +174,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 return False
 
             action = (0, 1)
-            ideal_op_x = new_floor
+            ideal_op_x = goal_floor
             ideal_op_y = math.floor
 
             op_x = ceil
@@ -176,7 +187,8 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
             action = (1, 0)
 
             ideal_op_x = math.floor
-            ideal_op_y = new_ceil
+            ideal_op_y = goal_ceil
+
             op_x = new_floor
             op_y = floor
 
@@ -215,7 +227,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 return False
 
             action = (0, 1)
-            ideal_op_x = new_floor
+            ideal_op_x = goal_floor
             ideal_op_y = math.floor
 
             op_x = floor
@@ -228,7 +240,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
 
             action = (1, 0)
             ideal_op_x = math.floor
-            ideal_op_y = new_ceil
+            ideal_op_y = goal_ceil
 
             op_x = new_ceil
             op_y = ceil
@@ -239,7 +251,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 return False
 
             action = (0, -1)
-            ideal_op_x = new_ceil
+            ideal_op_x = goal_ceil
             ideal_op_y = math.ceil
 
             op_x = ceil
@@ -251,7 +263,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 return False
             action = (-1, 0)
             ideal_op_x = math.ceil
-            ideal_op_y = new_floor
+            ideal_op_y = goal_floor
 
             op_x = new_floor
             op_y = floor
