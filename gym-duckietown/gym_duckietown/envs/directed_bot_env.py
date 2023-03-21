@@ -14,25 +14,27 @@ DIR_TO_NUM = {
     "right:": 2,
 }
 
+uncertainty = 0.15
+
 
 def identity(x):
     return x
 
 
 def ceil(x):
-    return math.ceil(x) - 0.1
+    return math.ceil(x) - random.random() * uncertainty
 
 
 def floor(x):
-    return math.floor(x) + 0.1
+    return math.floor(x) + random.random() * uncertainty
 
 
 def new_ceil(x):
-    return math.ceil(x) - 0.25
+    return math.ceil(x) - 0.25 + (random.random() - 0.5) * uncertainty
 
 
 def new_floor(x):
-    return math.floor(x) + 0.25
+    return math.floor(x) + 0.25 + (random.random() - 0.5) * uncertainty
 
 
 class DirectedBotEnv(DuckietownEnv, LegacyEnv):
@@ -86,11 +88,12 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
         if "straight" in kind:
             return False
 
-        if math.fabs(self.cur_angle) > 1 / 8 * np.pi and \
-                math.fabs(self.cur_angle - 1 / 2 * np.pi) > 1 / 8 * np.pi and \
-                math.fabs(self.cur_angle - np.pi) > 1 / 8 * np.pi and \
-                math.fabs(self.cur_angle - 3 / 2 * np.pi) > 1 / 8 * np.pi:
-            return False
+        if self.direction != 0:
+            if math.fabs(self.cur_angle) > 1 / 6 * np.pi and \
+                    math.fabs(self.cur_angle - 1 / 2 * np.pi) > 1 / 6 * np.pi and \
+                    math.fabs(self.cur_angle - np.pi) > 1 / 6 * np.pi and \
+                    math.fabs(self.cur_angle - 3 / 2 * np.pi) > 1 / 6 * np.pi:
+                return False
 
         if self.cur_angle > 7 / 4 * np.pi or self.cur_angle <= 1 / 4 * np.pi:
             if kind == 'curve_right':
@@ -178,7 +181,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
             ideal_op_x = new_floor
             ideal_op_y = math.floor
 
-            op_x = math.floor
+            op_x = floor
             op_y = new_ceil
         elif 1 / 4 * np.pi < self.cur_angle <= 3 / 4 * np.pi:
             if kind == 'curve_right' and angle != 2:
@@ -191,7 +194,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
             ideal_op_y = new_ceil
 
             op_x = new_ceil
-            op_y = math.ceil
+            op_y = ceil
         elif 3 / 4 * np.pi < self.cur_angle <= 5 / 4 * np.pi:
             if kind == 'curve_right' and angle != 3:
                 return False
@@ -202,7 +205,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
             ideal_op_x = new_ceil
             ideal_op_y = math.ceil
 
-            op_x = math.ceil
+            op_x = ceil
             op_y = new_floor
         else:
             if kind == 'curve_right':
@@ -214,7 +217,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
             ideal_op_y = new_floor
 
             op_x = new_floor
-            op_y = math.floor
+            op_y = floor
 
         new_pos_x = start_location[0] + action[0]
         new_pos_y = start_location[1] + action[1]
