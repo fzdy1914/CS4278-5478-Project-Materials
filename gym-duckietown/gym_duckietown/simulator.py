@@ -326,6 +326,8 @@ class Simulator(gym.Env):
             import os
             self.map_names = os.listdir('gym-duckietown/gym_duckietown/map_2021')
             self.map_names = [mapfile.replace('.yaml', '') for mapfile in self.map_names]
+            if self.my_mode:
+                self.map_names = [mapfile.replace('.yaml', '') for mapfile in self.map_names if "map1" not in mapfile]
 
         # Initialize the state
         self.reset()
