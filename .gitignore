@@ -6,5 +6,5 @@
 gym-duckietown/test_dev/
 path_*.yaml
 
-/left_result
-/right_result
+#/left_result
+#/right_result

@@ -38,15 +38,14 @@ config = (
         .resources(num_gpus=0)
     )
 algo = config.build()
-algo.restore("D:\\left_result\\checkpoint_000100")
+algo.restore("D:\\left_result\\checkpoint_000079")
 
 env = launch_and_wrap_env(None)
 
 while True:
-    obs, _, _, _, _ = env.step([0, 0])
+    obs, _, done, _, _ = env.step([0, 0])
     env.render()
 
-    done = False
     while not done:
         # Compute an action (`a`).
         action = algo.compute_single_action(

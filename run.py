@@ -40,7 +40,7 @@ args = parser.parse_args()
 
 # simulator instantiation
 env = DirectedBotEnv(
-    direction=2,
+    direction=0,
     domain_rand=False,
     max_steps=15000,
     map_name=args.map_name,
