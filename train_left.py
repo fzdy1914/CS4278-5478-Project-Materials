@@ -44,7 +44,7 @@ def launch_and_wrap_env(ctx):
         direction=1,
         domain_rand=False,
         max_steps=100,
-        map_name="map1_0",
+        map_name="map2_0",
         randomize_maps_on_reset=True
     )
 
@@ -95,7 +95,7 @@ if __name__ == "__main__":
         config.evaluation_num_episodes = 5
 
         algo = config.build()
-        algo.restore("D:\\left_result\\checkpoint_000105")
+        # algo.restore("D:\\left_result\\checkpoint_000105")
         # run manual training loop and print results after each iteration
         for _ in range(args.stop_iters):
             result = algo.train()

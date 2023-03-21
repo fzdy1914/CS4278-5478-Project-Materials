@@ -164,6 +164,7 @@ class Simulator(gym.Env):
             distortion=False,
             randomize_maps_on_reset=False,
             goal_tile=None,
+            my_mode=True
     ):
         """
 
@@ -184,6 +185,7 @@ class Simulator(gym.Env):
         :param distortion: If true, distorts the image with fish-eye approximation
         :param randomize_maps_on_reset: If true, randomizes the map on reset (Slows down training)
         """
+        self.my_mode = my_mode
         # first initialize the RNG
         self.seed_value = seed
         self.seed(seed=self.seed_value)
@@ -480,9 +482,14 @@ class Simulator(gym.Env):
             if self.start_tile is not None:
                 tile = self.start_tile
             else:
-                # Select a random drivable tile to start on
-                tile_idx = self.np_random.randint(0, len(self.drivable_tiles))
-                tile = self.drivable_tiles[tile_idx]
+                if self.my_mode:
+                    # Select a random drivable tile to start on
+                    tile_idx = self.np_random.randint(0, len(self.cross_tiles))
+                    tile = self.cross_tiles[tile_idx]
+                else:
+                    # Select a random drivable tile to start on
+                    tile_idx = self.np_random.randint(0, len(self.drivable_tiles))
+                    tile = self.drivable_tiles[tile_idx]
 
         # Keep trying to find a valid spawn position on this tile
 
@@ -658,6 +665,7 @@ class Simulator(gym.Env):
 
         # We keep a separate list of drivable tiles
         self.drivable_tiles = []
+        self.cross_tiles = []
 
         # For each row in the grid
         for j, row in enumerate(tiles):
@@ -699,6 +707,8 @@ class Simulator(gym.Env):
                 if drivable:
                     tile['curves'] = self._get_curve(i, j)
                     self.drivable_tiles.append(tile)
+                    if "straight" not in kind:
+                        self.cross_tiles.append(tile)
 
         self.mesh = ObjMesh.get('duckiebot')
         self._load_objects(map_data)
