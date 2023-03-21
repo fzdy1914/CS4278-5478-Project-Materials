@@ -5,13 +5,10 @@ from gym_duckietown.new_wrappers import NormalizeWrapper, ResizeWrapper, StackWr
 from gymnasium.wrappers import EnvCompatibility
 
 import ray
-from ray import air, tune
 from ray.rllib.algorithms.ppo import PPOConfig
-from ray.rllib.utils.test_utils import check_learning_achieved
 from ray.tune.registry import register_env
 
 from gym_duckietown.envs import *
-from ray.rllib.algorithms.algorithm import Algorithm
 
 
 def launch_and_wrap_env(ctx):
@@ -30,29 +27,37 @@ def launch_and_wrap_env(ctx):
 
     return env
 
+ray.init()
+register_env('MyDuckietown', launch_and_wrap_env)
+config = (
+        PPOConfig()
+        .environment("MyDuckietown")
+        .framework("torch")
+        .rollouts(num_rollout_workers=0)
+        .training()
+        .resources(num_gpus=0)
+    )
+algo = config.build()
+algo.restore("D:\\left_result\\checkpoint_000100")
 
 env = launch_and_wrap_env(None)
-obs, _ = env.reset()
-env.render()
 
-register_env('MyDuckietown', launch_and_wrap_env)
-
-algo = Algorithm.from_checkpoint("D:\\left_result\\checkpoint_000579")
-
-num_episodes = 0
-episode_reward = 0.0
-done = False
-while not done:
-    # Compute an action (`a`).
-    a = algo.compute_single_action(
-        observation=obs,
-        explore=False,
-    )
-    # Send the computed action `a` to the env.
-    obs, reward, done, truncated, _ = env.step(a)
-    episode_reward += reward
+while True:
+    obs, _, _, _, _ = env.step([0, 0])
     env.render()
-    # Is the episode `done`? -> Reset.
 
-time.sleep(100)
-algo.stop()
+    done = False
+    while not done:
+        # Compute an action (`a`).
+        action = algo.compute_single_action(
+            observation=obs,
+            explore=False,
+        )
+        # Send the computed action `a` to the env.
+        obs, reward, done, truncated, _ = env.step(action)
+        print(action, reward)
+        env.render()
+        # Is the episode `done`? -> Reset.
+    env.reset()
+# time.sleep(100)
+# algo.stop()
