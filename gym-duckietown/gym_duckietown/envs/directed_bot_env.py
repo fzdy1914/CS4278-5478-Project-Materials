@@ -50,11 +50,24 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
         LegacyEnv.__init__(self)
         DuckietownEnv.__init__(self, **kwargs)
         logger.info('using GuidedBotEnvEnv')
-        self.action_space = spaces.Box(
-            low=np.array([.25,-np.pi]),
-            high=np.array([1,np.pi]),
-            dtype=np.float64
-        )
+        if self.direction == 2:
+            self.action_space = spaces.Box(
+                low=np.array([.25, -np.pi]),
+                high=np.array([1, 0]),
+                dtype=np.float64
+            )
+        elif self.direction == 1:
+            self.action_space = spaces.Box(
+                low=np.array([.25, 0]),
+                high=np.array([1, np.pi]),
+                dtype=np.float64
+            )
+        else:
+            self.action_space = spaces.Box(
+                low=np.array([.25, -np.pi ]),
+                high=np.array([1, np.pi]),
+                dtype=np.float64
+            )
 
         self.observation_space = spaces.Box(
                 low=0,
@@ -217,6 +230,9 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
 
     def reset(self):
         obs = DuckietownEnv.reset(self)
+
+        self.randomize_maps_on_reset = False
+
         if self.direction == 1:
             if not self.generate_goal_tile_left():
                 return self.reset()
@@ -227,6 +243,11 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
         if not self._valid_pose(self.cur_pos, self.cur_angle):
             return self.reset()
 
+        _, _, done, info = self.step([0, 0])
+        if done:
+            return self.reset()
+
+        self.randomize_maps_on_reset = True
         return obs
 
     def step(self, action):
@@ -240,7 +261,6 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 reward = 100
                 dist = math.sqrt((self.cur_pos[0] - self.goal_pos[0]) ** 2 + (self.cur_pos[2] - self.goal_pos[1]) ** 2)
                 reward -= 100 * dist
-                print(reward)
             else:
                 reward = -100
             done = True

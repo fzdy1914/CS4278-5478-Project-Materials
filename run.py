@@ -40,7 +40,7 @@ args = parser.parse_args()
 
 # simulator instantiation
 env = DirectedBotEnv(
-    direction=1,
+    direction=2,
     domain_rand=False,
     max_steps=15000,
     map_name=args.map_name,
@@ -96,6 +96,7 @@ if args.manual:
 
         env.render()
         if done:
+            print(reward)
             env.reset()
             env.render()
 

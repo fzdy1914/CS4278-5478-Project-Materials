@@ -21,9 +21,6 @@ class DuckietownEnv(Simulator):
         limit = 1.0,
         **kwargs
     ):
-        Simulator.__init__(self, **kwargs)
-        logger.info('using DuckietownEnv')
-
         self.action_space = spaces.Box(
             low=np.array([-1,-1]),
             high=np.array([1,1]),
@@ -44,6 +41,9 @@ class DuckietownEnv(Simulator):
 
         # Wheel velocity limit
         self.limit = limit
+
+        Simulator.__init__(self, **kwargs)
+        logger.info('using DuckietownEnv')
 
     def step(self, action):
         vel, angle = action
