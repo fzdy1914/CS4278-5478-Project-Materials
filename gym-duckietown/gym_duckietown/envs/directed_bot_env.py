@@ -149,6 +149,9 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 return False
 
             action = (0, 1)
+            ideal_op_x = new_floor
+            ideal_op_y = math.floor
+
             op_x = math.floor
             op_y = new_ceil
         elif 1 / 4 * np.pi < self.cur_angle <= 3 / 4 * np.pi:
@@ -158,6 +161,9 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 return False
 
             action = (1, 0)
+            ideal_op_x = math.floor
+            ideal_op_y = new_ceil
+
             op_x = new_ceil
             op_y = math.ceil
         elif 3 / 4 * np.pi < self.cur_angle <= 5 / 4 * np.pi:
@@ -167,6 +173,9 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 return False
 
             action = (0, -1)
+            ideal_op_x = new_ceil
+            ideal_op_y = math.ceil
+
             op_x = math.ceil
             op_y = new_floor
         else:
@@ -175,6 +184,9 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
             if kind == 'curve_left' and angle != 1:
                 return False
             action = (-1, 0)
+            ideal_op_x = math.ceil
+            ideal_op_y = new_floor
+
             op_x = new_floor
             op_y = math.floor
 
@@ -185,6 +197,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 self.goal_location = (new_pos_x, new_pos_y)
                 self.cur_pos[0] = op_x(self.cur_pos[0])
                 self.cur_pos[2] = op_y(self.cur_pos[2])
+                self.goal_pos = (ideal_op_x(self.cur_pos[0] + action[0]), ideal_op_y(self.cur_pos[2] + action[1]))
                 return True
 
         return False
@@ -212,6 +225,10 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
         if self.get_grid_coords(self.cur_pos) != self.start_location:
             if self.get_grid_coords(self.cur_pos) == self.goal_location:
                 reward = 100
+                dist = math.sqrt((self.cur_pos[0] - self.goal_pos[0]) ** 2 + (self.cur_pos[2] - self.goal_pos[1]) ** 2)
+
+                reward -= 100 * dist
+
             else:
                 reward = -100
             done = True
