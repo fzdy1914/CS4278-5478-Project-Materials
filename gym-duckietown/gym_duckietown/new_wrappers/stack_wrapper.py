@@ -38,3 +38,6 @@ class StackWrapper(gym.ObservationWrapper):
         self.obs_buffer = None
         obs, info = self.env.reset(**kwargs)
         return self.observation(obs), info
+
+    def clear(self):
+        self.obs_buffer = None

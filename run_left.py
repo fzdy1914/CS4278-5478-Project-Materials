@@ -31,7 +31,9 @@ ray.init()
 register_env('MyDuckietown', launch_and_wrap_env)
 config = (
         PPOConfig()
-        .environment("MyDuckietown")
+        .environment("MyDuckietown", env_config={
+            "direction": 0
+        })
         .framework("torch")
         .rollouts(num_rollout_workers=0)
         .training()

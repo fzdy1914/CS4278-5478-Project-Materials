@@ -1,12 +1,13 @@
 # coding=utf-8
 import numpy as np
 from gymnasium import spaces
+from gymnasium.wrappers.compatibility import LegacyEnv
 
 from ..simulator import Simulator
 from .. import logger
 
 
-class DuckietownEnv(Simulator):
+class DuckietownEnv(Simulator, LegacyEnv):
     """
     Wrapper to control the simulator using velocity and steering angle
     instead of differential drive motor velocities
@@ -43,6 +44,7 @@ class DuckietownEnv(Simulator):
         self.limit = limit
 
         Simulator.__init__(self, **kwargs)
+        LegacyEnv.__init__(self)
         logger.info('using DuckietownEnv')
 
     def step(self, action):

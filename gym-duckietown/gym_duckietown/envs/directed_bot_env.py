@@ -9,9 +9,10 @@ from gymnasium.wrappers.compatibility import LegacyEnv
 from . import DuckietownEnv
 
 DIR_TO_NUM = {
-    "forward": 0,
+    "forward_first": 0,
     "left": 1,
     "right:": 2,
+    "forward_normal": 3,
 }
 
 uncertainty = 0
@@ -45,7 +46,7 @@ def goal_floor(x):
     return math.floor(x) + 0.25
 
 
-class DirectedBotEnv(DuckietownEnv, LegacyEnv):
+class DirectedBotEnv(DuckietownEnv):
     """
     Wrapper to control the simulator using velocity and steering angle
     instead of differential drive motor velocities
@@ -58,9 +59,8 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
     ):
         self.direction = direction
         my_mode = True
-        if self.direction == 0:
+        if self.direction == 0 or self.direction == 3:
             my_mode = False
-        LegacyEnv.__init__(self)
         DuckietownEnv.__init__(self, my_mode=my_mode, **kwargs)
         logger.info('using DirectedBotEnv')
         if self.direction == 2:
@@ -75,9 +75,15 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 high=np.array([1, np.pi]),
                 dtype=np.float64
             )
-        else:
+        elif direction == 0:
             self.action_space = spaces.Box(
-                low=np.array([.25, -np.pi]),
+                low=np.array([0, -np.pi]),
+                high=np.array([1, np.pi]),
+                dtype=np.float64
+            )
+        elif direction == 3:
+            self.action_space = spaces.Box(
+                low=np.array([0.5, -np.pi]),
                 high=np.array([1, np.pi]),
                 dtype=np.float64
             )
@@ -89,7 +95,7 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
                 dtype=np.uint8
             )
 
-    def generate_goal_tile_forward(self):
+    def generate_goal_tile_forward_first(self):
         start_location = self.get_grid_coords(self.cur_pos)
         self.start_location = start_location
         tile = self._get_tile(start_location[0], start_location[1])
@@ -280,19 +286,70 @@ class DirectedBotEnv(DuckietownEnv, LegacyEnv):
 
         return False
 
+    def generate_goal_tile_forward_normal(self):
+        start_location = self.get_grid_coords(self.cur_pos)
+        self.start_location = start_location
+        tile = self._get_tile(start_location[0], start_location[1])
+        kind = tile['kind']
+
+        if kind == 'curve_right' or kind == 'curve_left':
+            return False
+
+        if self.cur_angle > 7 / 4 * np.pi or self.cur_angle <= 1 / 4 * np.pi:
+            action = (1, 0)
+            ideal_op_x = math.floor
+            ideal_op_y = goal_ceil
+            op_x = floor
+            op_y = new_ceil
+
+        elif 1 / 4 * np.pi < self.cur_angle <= 3 / 4 * np.pi:
+            action = (0, -1)
+            ideal_op_x = goal_ceil
+            ideal_op_y = math.ceil
+            op_x = new_ceil
+            op_y = ceil
+
+        elif 3 / 4 * np.pi < self.cur_angle <= 5 / 4 * np.pi:
+            action = (-1, 0)
+            ideal_op_x = math.ceil
+            ideal_op_y = goal_floor
+            op_x = ceil
+            op_y = new_floor
+        else:
+            action = (0, 1)
+            ideal_op_x = goal_floor
+            ideal_op_y = math.floor
+            op_x = new_floor
+            op_y = floor
+
+        new_pos_x = start_location[0] + action[0]
+        new_pos_y = start_location[1] + action[1]
+        for tile in self.drivable_tiles:
+            if tile['coords'] == (new_pos_x, new_pos_y):
+                self.goal_location = (new_pos_x, new_pos_y)
+                self.cur_pos[0] = op_x(self.cur_pos[0])
+                self.cur_pos[2] = op_y(self.cur_pos[2])
+                self.goal_pos = (ideal_op_x(self.cur_pos[0] + action[0]), ideal_op_y(self.cur_pos[2] + action[1]))
+                return True
+
+        return False
+
     def reset(self):
         obs = DuckietownEnv.reset(self)
 
         self.randomize_maps_on_reset = False
 
         if self.direction == 0:
-            if not self.generate_goal_tile_forward():
+            if not self.generate_goal_tile_forward_first():
                 return self.reset()
         elif self.direction == 1:
             if not self.generate_goal_tile_left():
                 return self.reset()
         elif self.direction == 2:
             if not self.generate_goal_tile_right():
+                return self.reset()
+        elif self.direction == 3:
+            if not self.generate_goal_tile_forward_normal():
                 return self.reset()
 
         if not self._valid_pose(self.cur_pos, self.cur_angle):
