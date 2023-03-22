@@ -120,7 +120,7 @@ for map_name, task_info in task_dict.items():
         user_tile_start=start_tile,
         goal_tile=goal_tile,
         randomize_maps_on_reset=False,
-        my_mode=False
+        my_mode="none",
     )
 
     env = EnvCompatibility(env)

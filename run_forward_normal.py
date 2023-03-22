@@ -39,7 +39,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo = config.build()
-algo.restore("./forward_normal_result/good_enough")
+algo.restore("D:\\forward_normal_result\\checkpoint_000226")
 
 env = launch_and_wrap_env(None)
 

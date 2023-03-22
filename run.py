@@ -47,7 +47,7 @@ env = DuckietownEnv(
     user_tile_start=args.start_tile,
     goal_tile=args.goal_tile,
     randomize_maps_on_reset=False,
-    my_mode=False,
+    my_mode="none",
 )
 
 # obs = env.reset() # WARNING: never call this function during testing

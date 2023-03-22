@@ -40,7 +40,7 @@ args = parser.parse_args()
 
 # simulator instantiation
 env = DirectedBotEnv(
-    direction=1,
+    direction=0,
     domain_rand=False,
     max_steps=15000,
     map_name=args.map_name,
@@ -52,6 +52,7 @@ env = DirectedBotEnv(
 
 # obs = env.reset() # WARNING: never call this function during testing
 env.render()
+print(env.cur_pos, env.cur_angle, env.map_name)
 
 map_img, goal, start_pos = env.get_task_info()
 print("start tile:", start_pos, " goal tile:", goal)
@@ -98,6 +99,7 @@ if args.manual:
         if done:
             print(reward)
             env.reset()
+            print(env.cur_pos, env.cur_angle, env.map_name)
             env.render()
 
     pyglet.clock.schedule_interval(update, 1.0 / env.unwrapped.frame_rate)

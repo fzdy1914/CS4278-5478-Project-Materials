@@ -29,7 +29,7 @@ def launch_and_wrap_env(ctx):
 
 dir_path = "./testcases/milestone1_paths/"
 
-control_file_name = "map5_4_seed1_start_3,3_goal_3,10.txt"
+control_file_name = "map1_3_seed6_start_5,1_goal_55,1.txt"
 
 blocks = control_file_name.rstrip(".txt").split("_")
 
@@ -80,7 +80,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_forward_normal = config.build()
-algo_forward_normal.restore("./forward_normal_result/good_enough")
+algo_forward_normal.restore("./forward_normal_result/new_best")
 
 config = (
         PPOConfig()
@@ -112,7 +112,7 @@ algos = {
     "right": algo_right,
 }
 
-env = DuckietownEnv(
+env_old = DuckietownEnv(
     domain_rand=False,
     max_steps=1500,
     map_name=map_name,
@@ -120,10 +120,10 @@ env = DuckietownEnv(
     user_tile_start=start_tile,
     goal_tile=goal_tile,
     randomize_maps_on_reset=False,
-    my_mode=False
+    my_mode="none",
 )
 
-env = EnvCompatibility(env)
+env = EnvCompatibility(env_old)
 env = ResizeWrapper(env)
 env_stack = StackWrapper(env)
 env = NormalizeWrapper(env_stack)
@@ -165,7 +165,7 @@ while True:
             explore=False,
         )
         obs, reward, done, truncated, info = env.step(action)
-        print(reward)
+        print(reward, env_old.cur_pos)
         total_reward += reward
         total_step += 1
         actions.append(action)

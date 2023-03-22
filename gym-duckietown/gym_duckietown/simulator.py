@@ -164,7 +164,7 @@ class Simulator(gym.Env):
             distortion=False,
             randomize_maps_on_reset=False,
             goal_tile=None,
-            my_mode=True
+            my_mode="none",
     ):
         """
 
@@ -185,6 +185,7 @@ class Simulator(gym.Env):
         :param distortion: If true, distorts the image with fish-eye approximation
         :param randomize_maps_on_reset: If true, randomizes the map on reset (Slows down training)
         """
+        self.starts = {"map1_0": [[0.35582456636203696, 0.0, 1.673827537428069], 5.794834795325625], "map1_1": [[0.8354183021036256, 0.0, 1.8103683878558372], 5.489901944433498], "map1_2": [[2.0798469846788854, 0.0, 1.6893423403234993], 0.981046107423212], "map1_3": [[5.894798595354031, 0.0, 1.7682832141460336], 0.4876185567391589], "map1_4": [[50.835418302103626, 0.0, 1.8103683878558372], 5.489901944433498], "map2_0": [[7.569559111920326, 0.0, 7.3056308688489855], 1.0250239789299749], "map2_1": [[1.37957739320378, 0.0, 1.5718595503882864], 4.342244420987174], "map2_2": [[7.436543726309452, 0.0, 7.60088565307736], 1.346591413783137], "map2_3": [[2.355824566362037, 0.0, 1.673827537428069], 5.794834795325625], "map2_4": [[1.1932735620167931, 0.0, 4.927424071528147], 3.934984828892838], "map3_0": [[4.3558245663620365, 0.0, 1.673827537428069], 5.794834795325625], "map3_1": [[2.634730653082536, 0.0, 3.10269882653807], 0.8987008840296534], "map3_2": [[6.079846984678886, 0.0, 4.689342340323499], 0.981046107423212], "map3_3": [[10.569559111920327, 0.0, 8.305630868848985], 1.0250239789299749], "map3_4": [[5.171460744023512, 0.0, 3.6510806782405023], 1.6582960236651594], "map4_0": [[3.188931425163231, 0.0, 3.163842605011648], 4.800743613248926], "map4_1": [[1.612043247881806, 0.0, 6.282540905701379], 4.53501624359886], "map4_2": [[11.569559111920327, 0.0, 11.305630868848985], 1.0250239789299749], "map4_3": [[13.634730653082535, 0.0, 8.10269882653807], 0.8987008840296534], "map4_4": [[11.079846984678886, 0.0, 4.689342340323499], 0.981046107423212], "map5_0": [[10.355824566362037, 0.0, 4.6738275374280684], 5.794834795325625], "map5_1": [[4.835418302103625, 0.0, 13.810368387855837], 5.489901944433498], "map5_2": [[13.220605744352909, 0.0, 3.204281814946536], 5.638566149850947], "map5_3": [[12.569559111920327, 0.0, 15.305630868848985], 1.0250239789299749], "map5_4": [[3.239221367488949, 0.0, 3.494393179485601], 1.8978974897678607]}
         self.my_mode = my_mode
         # first initialize the RNG
         self.seed_value = seed
@@ -326,7 +327,7 @@ class Simulator(gym.Env):
             import os
             self.map_names = os.listdir('gym-duckietown/gym_duckietown/map_2021')
             self.map_names = [mapfile.replace('.yaml', '') for mapfile in self.map_names]
-            if self.my_mode:
+            if self.my_mode == "cross":
                 self.map_names = [mapfile.replace('.yaml', '') for mapfile in self.map_names if "map1" not in mapfile]
 
         # Initialize the state
@@ -484,7 +485,7 @@ class Simulator(gym.Env):
             if self.start_tile is not None:
                 tile = self.start_tile
             else:
-                if self.my_mode:
+                if self.my_mode == "cross":
                     # Select a random drivable tile to start on
                     tile_idx = self.np_random.randint(0, len(self.cross_tiles))
                     tile = self.cross_tiles[tile_idx]
@@ -494,54 +495,57 @@ class Simulator(gym.Env):
                     tile = self.drivable_tiles[tile_idx]
 
         # Keep trying to find a valid spawn position on this tile
+        if self.my_mode != "start":
+            for _ in range(MAX_SPAWN_ATTEMPTS):
+                i, j = tile['coords']
+                self.i = i
+                self.j = j
+                # Choose a random position on this tile
+                x = self.np_random.uniform(i, i + 1) * self.road_tile_size
+                z = self.np_random.uniform(j, j + 1) * self.road_tile_size
+                propose_pos = np.array([x, 0, z])
 
-        for _ in range(MAX_SPAWN_ATTEMPTS):
-            i, j = tile['coords']
-            self.i = i
-            self.j = j
-            # Choose a random position on this tile
-            x = self.np_random.uniform(i, i + 1) * self.road_tile_size
-            z = self.np_random.uniform(j, j + 1) * self.road_tile_size
-            propose_pos = np.array([x, 0, z])
+                # Choose a random direction
+                propose_angle = self.np_random.uniform(0, 2 * math.pi)
 
-            # Choose a random direction
-            propose_angle = self.np_random.uniform(0, 2 * math.pi)
+                # logger.debug('Sampled %s %s angle %s' % (propose_pos[0],
+                #                                          propose_pos[1],
+                #                                          np.rad2deg(propose_angle)))
 
-            # logger.debug('Sampled %s %s angle %s' % (propose_pos[0],
-            #                                          propose_pos[1],
-            #                                          np.rad2deg(propose_angle)))
+                # If this is too close to an object or not a valid pose, retry
+                inconvenient = self._inconvenient_spawn(propose_pos)
 
-            # If this is too close to an object or not a valid pose, retry
-            inconvenient = self._inconvenient_spawn(propose_pos)
+                if inconvenient:
+                    # msg = 'The spawn was inconvenient.'
+                    # logger.warning(msg)
+                    continue
 
-            if inconvenient:
-                # msg = 'The spawn was inconvenient.'
-                # logger.warning(msg)
-                continue
+                invalid = not self._valid_pose(propose_pos, propose_angle, safety_factor=1.3)
+                if invalid:
+                    # msg = 'The spawn was invalid.'
+                    # logger.warning(msg)
+                    continue
 
-            invalid = not self._valid_pose(propose_pos, propose_angle, safety_factor=1.3)
-            if invalid:
-                # msg = 'The spawn was invalid.'
-                # logger.warning(msg)
-                continue
+                # If the angle is too far away from the driving direction, retry
+                try:
+                    lp = self.get_lane_pos2(propose_pos, propose_angle)
+                except NotInLane:
+                    continue
+                M = self.accept_start_angle_deg
+                ok = -M < lp.angle_deg < +M
+                if not ok:
+                    continue
+                # Found a valid initial pose
+                break
+            else:
+                msg = 'Could not find a valid starting pose after %s attempts' % MAX_SPAWN_ATTEMPTS
+                raise Exception(msg)
 
-            # If the angle is too far away from the driving direction, retry
-            try:
-                lp = self.get_lane_pos2(propose_pos, propose_angle)
-            except NotInLane:
-                continue
-            M = self.accept_start_angle_deg
-            ok = -M < lp.angle_deg < +M
-            if not ok:
-                continue
-            # Found a valid initial pose
-            break
+            self.cur_pos = propose_pos
+            self.cur_angle = propose_angle
         else:
-            msg = 'Could not find a valid starting pose after %s attempts' % MAX_SPAWN_ATTEMPTS
-            raise Exception(msg)
-
-        self.cur_pos = propose_pos
-        self.cur_angle = propose_angle
+            self.cur_pos, self.cur_angle = self.starts[self.map_name]
+            self.cur_pos = np.array(self.cur_pos)
 
         # Generate the first camera image
         obs = self.render_obs()
