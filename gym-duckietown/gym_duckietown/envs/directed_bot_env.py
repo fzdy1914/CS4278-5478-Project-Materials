@@ -31,19 +31,19 @@ def floor(x):
 
 
 def new_ceil(x):
-    return math.ceil(x) - 0.3 + (random.random() - 0.5) * uncertainty
+    return math.ceil(x) - 0.275 + (random.random() - 0.5) * uncertainty
 
 
 def new_floor(x):
-    return math.floor(x) + 0.3 + (random.random() - 0.5) * uncertainty
+    return math.floor(x) + 0.275 + (random.random() - 0.5) * uncertainty
 
 
 def goal_ceil(x):
-    return math.ceil(x) - 0.3
+    return math.ceil(x) - 0.275
 
 
 def goal_floor(x):
-    return math.floor(x) + 0.3
+    return math.floor(x) + 0.275
 
 
 class DirectedBotEnv(DuckietownEnv):
@@ -93,8 +93,8 @@ class DirectedBotEnv(DuckietownEnv):
             )
         elif direction == 3:
             self.action_space = spaces.Box(
-                low=np.array([0.5, -1]),
-                high=np.array([1, 1]),
+                low=np.array([0.25, -np.pi]),
+                high=np.array([1, np.pi]),
                 dtype=np.float64
             )
 

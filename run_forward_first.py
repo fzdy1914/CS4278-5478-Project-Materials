@@ -39,9 +39,20 @@ config = (
         .resources(num_gpus=0)
     )
 algo = config.build()
-algo.restore("./forward_first_result/good_enough")
+algo.restore("D:\\forward_result\\checkpoint_000312")
 
-env = launch_and_wrap_env(None)
+env_old = DirectedBotEnv(
+        direction=0,
+        domain_rand=False,
+        max_steps=100,
+        map_name="map2_0",
+        randomize_maps_on_reset=True
+    )
+
+env = EnvCompatibility(env_old)
+env = ResizeWrapper(env)
+env = StackWrapper(env)
+env = NormalizeWrapper(env)
 
 while True:
     obs, _, done, _, _ = env.step([0, 0])
@@ -55,9 +66,10 @@ while True:
         )
         # Send the computed action `a` to the env.
         obs, reward, done, truncated, _ = env.step(action)
-        print(action, reward)
+        # print(action, reward)
         env.render()
         # Is the episode `done`? -> Reset.
+    print(reward, env_old.map_name)
     env.reset()
 # time.sleep(100)
 # algo.stop()

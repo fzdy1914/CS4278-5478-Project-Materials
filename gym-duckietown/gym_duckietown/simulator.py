@@ -1,6 +1,7 @@
 # coding=utf-8
 from __future__ import division
 
+import random
 from collections import namedtuple
 from ctypes import POINTER
 
@@ -381,6 +382,11 @@ class Simulator(gym.Env):
 
         if self.randomize_maps_on_reset:
             map_name = np.random.choice(self.map_names)
+            rand = random.random()
+            if rand < 0.1:
+                map_name = "map4_0"
+            elif rand < 0.2:
+                map_name = "map4_2"
             self._load_map(map_name)
 
         if self.domain_rand:
