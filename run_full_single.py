@@ -180,7 +180,7 @@ while True:
 if success:
     print("success")
     print(total_reward, total_step, total_reward / total_step)
-    np.savetxt(f'./{map_name}_seed{seed}_start_{start_tile[0]},{start_tile[1]}_goal_{goal_tile[0]},{goal_tile[1]}.txt',
+    np.savetxt(f'./control_files/{map_name}_seed{seed}_start_{start_tile[0]},{start_tile[1]}_goal_{goal_tile[0]},{goal_tile[1]}.txt',
                actions, delimiter=',')
 else:
     print("fail")
