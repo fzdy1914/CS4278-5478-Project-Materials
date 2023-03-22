@@ -28,26 +28,26 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--max_steps', type=int, default=1500, help='max_steps')
 
 # You should set them to different map name and seed accordingly
-parser.add_argument('--map-name', '-m', default="map1_1", type=str)
-parser.add_argument('--seed', '-s', default=0, type=int)
-parser.add_argument('--start-tile', '-st', default="5,1", type=str, help="two numbers separated by a comma")
-parser.add_argument('--goal-tile', '-gt', default="75,1", type=str, help="two numbers separated by a comma")
-parser.add_argument('--control_path', default='./control_files/map2_1_seed12_start_1,1_goal_7,7.txt', type=str,
+parser.add_argument('--map-name', '-m', default="map5_3", type=str)
+parser.add_argument('--seed', '-s', default=2, type=int)
+parser.add_argument('--start-tile', '-st', default="1,13", type=str, help="two numbers separated by a comma")
+parser.add_argument('--goal-tile', '-gt', default="3,3", type=str, help="two numbers separated by a comma")
+parser.add_argument('--control_path', default='./map4_0_seed2_start_1,13_goal_3,3.txt', type=str,
                     help="the control file to run")
 parser.add_argument('--manual', default=True, type=str2bool, help="whether to manually control the robot")
 args = parser.parse_args()
 
 
 # simulator instantiation
-env = DuckietownEnv(
+env = DirectedBotEnv(
+    direction=3,
     domain_rand=False,
     max_steps=15000,
     map_name=args.map_name,
-    seed=args.seed,
-    user_tile_start=args.start_tile,
-    goal_tile=args.goal_tile,
-    randomize_maps_on_reset=False,
-    my_mode=False,
+    # seed=args.seed,
+    # user_tile_start=args.start_tile,
+    # goal_tile=args.goal_tile,
+    randomize_maps_on_reset=True
 )
 
 # obs = env.reset() # WARNING: never call this function during testing
@@ -93,7 +93,6 @@ if args.manual:
 
         obs, reward, done, info = env.step(action)
         # print(f"current pose = {info['curr_pos']}, step count = {env.unwrapped.step_count}, step reward = {reward:.3f}")
-        print(env.cur_pos, reward)
 
         env.render()
         if done:
@@ -113,12 +112,11 @@ else:
         curr_pos = info['curr_pos']
 
         print(f"current pose = {info['curr_pos']}, step count = {env.unwrapped.step_count}, step reward = {reward:.3f}")
-        print(env.cur_pos)
 
         env.render()
 
     # dump the controls using numpy
-    # np.savetxt(f'./{args.map_name}_seed{args.seed}_start_{start_pos[0]},{start_pos[1]}_goal_{goal[0]},{goal[1]}.txt',
-    #            actions, delimiter=',')
+    np.savetxt(f'./{args.map_name}_seed{args.seed}_start_{start_pos[0]},{start_pos[1]}_goal_{goal[0]},{goal[1]}.txt',
+               actions, delimiter=',')
 
 env.close()
