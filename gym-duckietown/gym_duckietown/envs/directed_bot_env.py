@@ -31,19 +31,19 @@ def floor(x):
 
 
 def new_ceil(x):
-    return math.ceil(x) - 0.25 + (random.random() - 0.5) * uncertainty
+    return math.ceil(x) - 0.3 + (random.random() - 0.5) * uncertainty
 
 
 def new_floor(x):
-    return math.floor(x) + 0.25 + (random.random() - 0.5) * uncertainty
+    return math.floor(x) + 0.3 + (random.random() - 0.5) * uncertainty
 
 
 def goal_ceil(x):
-    return math.ceil(x) - 0.25
+    return math.ceil(x) - 0.3
 
 
 def goal_floor(x):
-    return math.floor(x) + 0.25
+    return math.floor(x) + 0.3
 
 
 class DirectedBotEnv(DuckietownEnv):
@@ -83,8 +83,8 @@ class DirectedBotEnv(DuckietownEnv):
             )
         elif direction == 3:
             self.action_space = spaces.Box(
-                low=np.array([0.5, -np.pi]),
-                high=np.array([1, np.pi]),
+                low=np.array([0.5, -1]),
+                high=np.array([1, 1]),
                 dtype=np.float64
             )
 
@@ -108,20 +108,24 @@ class DirectedBotEnv(DuckietownEnv):
             action = (1, 0)
             ideal_op_x = math.floor
             ideal_op_y = goal_ceil
+            ideal_angle = 0
 
         elif 1 / 4 * np.pi < self.cur_angle <= 3 / 4 * np.pi:
             action = (0, -1)
             ideal_op_x = goal_ceil
             ideal_op_y = math.ceil
+            ideal_angle = 0.5 * np.pi
 
         elif 3 / 4 * np.pi < self.cur_angle <= 5 / 4 * np.pi:
             action = (-1, 0)
             ideal_op_x = math.ceil
             ideal_op_y = goal_floor
+            ideal_angle = np.pi
         else:
             action = (0, 1)
             ideal_op_x = goal_floor
             ideal_op_y = math.floor
+            ideal_angle = 1.5 * np.pi
 
         new_pos_x = start_location[0] + action[0]
         new_pos_y = start_location[1] + action[1]
@@ -129,6 +133,7 @@ class DirectedBotEnv(DuckietownEnv):
             if tile['coords'] == (new_pos_x, new_pos_y):
                 self.goal_location = (new_pos_x, new_pos_y)
                 self.goal_pos = (ideal_op_x(self.cur_pos[0] + action[0]), ideal_op_y(self.cur_pos[2] + action[1]))
+                self.ideal_angle = ideal_angle
                 return True
 
         return False
@@ -158,6 +163,7 @@ class DirectedBotEnv(DuckietownEnv):
             action = (0, -1)
             ideal_op_x = goal_ceil
             ideal_op_y = math.ceil
+            ideal_angle = 0.5 * np.pi
 
             op_x = floor
             op_y = new_ceil
@@ -170,6 +176,7 @@ class DirectedBotEnv(DuckietownEnv):
             action = (-1, 0)
             ideal_op_x = math.ceil
             ideal_op_y = goal_floor
+            ideal_angle = np.pi
 
             op_x = new_ceil
             op_y = ceil
@@ -182,6 +189,7 @@ class DirectedBotEnv(DuckietownEnv):
             action = (0, 1)
             ideal_op_x = goal_floor
             ideal_op_y = math.floor
+            ideal_angle = 1.5 * np.pi
 
             op_x = ceil
             op_y = new_floor
@@ -194,6 +202,7 @@ class DirectedBotEnv(DuckietownEnv):
 
             ideal_op_x = math.floor
             ideal_op_y = goal_ceil
+            ideal_angle = 0
 
             op_x = new_floor
             op_y = floor
@@ -206,6 +215,7 @@ class DirectedBotEnv(DuckietownEnv):
                 self.cur_pos[0] = op_x(self.cur_pos[0])
                 self.cur_pos[2] = op_y(self.cur_pos[2])
                 self.goal_pos = (ideal_op_x(self.cur_pos[0] + action[0]), ideal_op_y(self.cur_pos[2] + action[1]))
+                self.ideal_angle = ideal_angle
                 return True
 
         return False
@@ -235,6 +245,7 @@ class DirectedBotEnv(DuckietownEnv):
             action = (0, 1)
             ideal_op_x = goal_floor
             ideal_op_y = math.floor
+            ideal_angle = 1.5 * np.pi
 
             op_x = floor
             op_y = new_ceil
@@ -247,6 +258,7 @@ class DirectedBotEnv(DuckietownEnv):
             action = (1, 0)
             ideal_op_x = math.floor
             ideal_op_y = goal_ceil
+            ideal_angle = 0
 
             op_x = new_ceil
             op_y = ceil
@@ -259,6 +271,7 @@ class DirectedBotEnv(DuckietownEnv):
             action = (0, -1)
             ideal_op_x = goal_ceil
             ideal_op_y = math.ceil
+            ideal_angle = 0.5 * np.pi
 
             op_x = ceil
             op_y = new_floor
@@ -270,6 +283,7 @@ class DirectedBotEnv(DuckietownEnv):
             action = (-1, 0)
             ideal_op_x = math.ceil
             ideal_op_y = goal_floor
+            ideal_angle = np.pi
 
             op_x = new_floor
             op_y = floor
@@ -282,6 +296,7 @@ class DirectedBotEnv(DuckietownEnv):
                 self.cur_pos[0] = op_x(self.cur_pos[0])
                 self.cur_pos[2] = op_y(self.cur_pos[2])
                 self.goal_pos = (ideal_op_x(self.cur_pos[0] + action[0]), ideal_op_y(self.cur_pos[2] + action[1]))
+                self.ideal_angle = ideal_angle
                 return True
 
         return False
@@ -299,6 +314,7 @@ class DirectedBotEnv(DuckietownEnv):
             action = (1, 0)
             ideal_op_x = math.floor
             ideal_op_y = goal_ceil
+            ideal_angle = 0
             op_x = floor
             op_y = new_ceil
 
@@ -306,6 +322,7 @@ class DirectedBotEnv(DuckietownEnv):
             action = (0, -1)
             ideal_op_x = goal_ceil
             ideal_op_y = math.ceil
+            ideal_angle = 0.5 * np.pi
             op_x = new_ceil
             op_y = ceil
 
@@ -313,12 +330,14 @@ class DirectedBotEnv(DuckietownEnv):
             action = (-1, 0)
             ideal_op_x = math.ceil
             ideal_op_y = goal_floor
+            ideal_angle = np.pi
             op_x = ceil
             op_y = new_floor
         else:
             action = (0, 1)
             ideal_op_x = goal_floor
             ideal_op_y = math.floor
+            ideal_angle = 1.5 * np.pi
             op_x = new_floor
             op_y = floor
 
@@ -330,6 +349,7 @@ class DirectedBotEnv(DuckietownEnv):
                 self.cur_pos[0] = op_x(self.cur_pos[0])
                 self.cur_pos[2] = op_y(self.cur_pos[2])
                 self.goal_pos = (ideal_op_x(self.cur_pos[0] + action[0]), ideal_op_y(self.cur_pos[2] + action[1]))
+                self.ideal_angle = ideal_angle
                 return True
 
         return False
@@ -372,7 +392,10 @@ class DirectedBotEnv(DuckietownEnv):
             if self.get_grid_coords(self.cur_pos) == self.goal_location:
                 reward = 100
                 dist = math.sqrt((self.cur_pos[0] - self.goal_pos[0]) ** 2 + (self.cur_pos[2] - self.goal_pos[1]) ** 2)
-                reward -= 100 * dist
+                angle_diff = min(math.fabs((self.cur_angle % (2 * np.pi)) - self.ideal_angle),
+                                 math.fabs((self.cur_angle % (2 * np.pi)) - 2 * np.pi - self.ideal_angle),
+                                 math.fabs((self.cur_angle % (2 * np.pi)) + 2 * np.pi - self.ideal_angle))
+                reward -= 100 * dist + 50 * angle_diff
             else:
                 reward = -100
             done = True

@@ -29,7 +29,7 @@ def launch_and_wrap_env(ctx):
 
 dir_path = "./testcases/milestone1_paths/"
 
-control_file_name = "map2_0_seed0_start_7,7_goal_1,4.txt"
+control_file_name = "map5_4_seed1_start_3,3_goal_3,10.txt"
 
 blocks = control_file_name.rstrip(".txt").split("_")
 
