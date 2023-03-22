@@ -87,7 +87,7 @@ class DirectedBotEnv(DuckietownEnv):
             )
         elif direction == 0:
             self.action_space = spaces.Box(
-                low=np.array([0, -np.pi]),
+                low=np.array([-0.25, -np.pi]),
                 high=np.array([1, np.pi]),
                 dtype=np.float64
             )
@@ -389,7 +389,7 @@ class DirectedBotEnv(DuckietownEnv):
                 angle_diff = min(math.fabs((self.cur_angle % (2 * np.pi)) - self.ideal_angle),
                                  math.fabs((self.cur_angle % (2 * np.pi)) - 2 * np.pi - self.ideal_angle),
                                  math.fabs((self.cur_angle % (2 * np.pi)) + 2 * np.pi - self.ideal_angle))
-                reward -= 100 * dist + 50 * angle_diff
+                reward -= 100 * dist + 25 * angle_diff
             else:
                 reward = -100
             done = True
