@@ -41,7 +41,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_forward_first = config.build()
-algo_forward_first.restore("./forward_first_result/good_enough")
+algo_forward_first.restore("./forward_first_result/new_best")
 
 config = (
         PPOConfig()
@@ -53,7 +53,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_forward_normal = config.build()
-algo_forward_normal.restore("./forward_normal_result/good_enough")
+algo_forward_normal.restore("./forward_normal_result/cur_best")
 
 config = (
         PPOConfig()
@@ -65,7 +65,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_left = config.build()
-algo_left.restore("./left_result/good_enough")
+algo_left.restore("./left_result/new_best")
 
 config = (
         PPOConfig()
@@ -112,7 +112,7 @@ for map_name, task_info in task_dict.items():
     print(tiles, instructions)
 
 
-    env = DuckietownEnv(
+    env_old = DuckietownEnv(
         domain_rand=False,
         max_steps=1500,
         map_name=map_name,
@@ -123,7 +123,7 @@ for map_name, task_info in task_dict.items():
         my_mode="none",
     )
 
-    env = EnvCompatibility(env)
+    env = EnvCompatibility(env_old)
     env = ResizeWrapper(env)
     env_stack = StackWrapper(env)
     env = NormalizeWrapper(env_stack)
@@ -144,7 +144,7 @@ for map_name, task_info in task_dict.items():
             explore=False,
         )
         obs, reward, done, truncated, info = env.step(action)
-        print(reward)
+        # print(reward)
         total_reward += reward
         total_step += 1
         actions.append(action)
@@ -165,7 +165,7 @@ for map_name, task_info in task_dict.items():
                 explore=False,
             )
             obs, reward, done, truncated, info = env.step(action)
-            print(reward)
+            # print(reward)
             total_reward += reward
             total_step += 1
             actions.append(action)
@@ -183,4 +183,4 @@ for map_name, task_info in task_dict.items():
         np.savetxt(f'./control_files/{map_name}_seed{seed}_start_{start_tile[0]},{start_tile[1]}_goal_{goal_tile[0]},{goal_tile[1]}.txt',
                    actions, delimiter=',')
     else:
-        print("fail")
+        print("fail", env_old.map_name, env_old.cur_pos, tiles[idx], instructions[idx])

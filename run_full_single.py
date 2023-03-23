@@ -68,7 +68,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_forward_first = config.build()
-algo_forward_first.restore("./forward_first_result/good_enough")
+algo_forward_first.restore("./forward_first_result/new_best")
 
 config = (
         PPOConfig()
@@ -80,7 +80,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_forward_normal = config.build()
-algo_forward_normal.restore("./forward_normal_result/new_best")
+algo_forward_normal.restore("./forward_normal_result/cur_best")
 
 config = (
         PPOConfig()
@@ -92,7 +92,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_left = config.build()
-algo_left.restore("./left_result/good_enough")
+algo_left.restore("./left_result/new_best")
 
 config = (
         PPOConfig()

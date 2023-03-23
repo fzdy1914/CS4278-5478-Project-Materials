@@ -15,7 +15,7 @@ DIR_TO_NUM = {
     "forward_normal": 3,
 }
 
-uncertainty = 0
+uncertainty = 0.2
 
 
 def identity(x):
@@ -23,19 +23,27 @@ def identity(x):
 
 
 def ceil(x):
-    return math.ceil(x) - random.random() * uncertainty - 0.0001
+    return math.ceil(x) - 0.0001
 
 
 def floor(x):
-    return math.floor(x) + random.random() * uncertainty + 0.0001
+    return math.floor(x) + 0.0001
 
 
 def new_ceil(x):
-    return math.ceil(x) - 0.275 + (random.random() - 0.5) * uncertainty
+    up = min(0.27, uncertainty)
+    down = max(-0.72, -uncertainty)
+    pos = random.uniform(down, up)
+
+    return math.ceil(x) - 0.275 + pos
 
 
 def new_floor(x):
-    return math.floor(x) + 0.275 + (random.random() - 0.5) * uncertainty
+    up = min(0.27, uncertainty)
+    down = max(-0.72, -uncertainty)
+    pos = random.uniform(down, up)
+
+    return math.floor(x) + 0.275 - pos
 
 
 def goal_ceil(x):
