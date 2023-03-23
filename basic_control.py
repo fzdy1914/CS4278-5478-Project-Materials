@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import cv2
 import math
@@ -38,6 +40,9 @@ def detect_lanes(image):
     lines = cv2.HoughLinesP(
         cropped_image, rho=6, theta=np.pi / 60, threshold=160, lines=np.array([]), minLineLength=40, maxLineGap=25
     )
+
+    # cv2.imwrite(f"./test.png", draw_lines(image, lines))
+
     left_line_x, left_line_y = [], []
     right_line_x, right_line_y = [], []
     for line in lines:
@@ -88,9 +93,9 @@ def calc_steering(lane_left, lane_right):
     elif lane_left or lane_right:
         # x1, _, x2, _ = lane_left if lane_left else lane_right
         # x_offset = x2 - x1
-        return 0.02
+        return -0.02
     else:
-        return 0.02
+        return -0.02
 
     y_offset = height / 2
     steering = -math.atan(x_offset / y_offset)
@@ -99,7 +104,7 @@ def calc_steering(lane_left, lane_right):
 
 
 def trial_run(env):
-    speed = 2e-01
+    speed = 0
     steering = 0
     start_pos = env.get_task_info()[2]
 
@@ -113,4 +118,5 @@ def trial_run(env):
             return (start_pos, curr_pos)
 
         lane_left, lane_right = detect_lanes(obs)
+        cv2.imwrite(f"./test1.png", draw_lines(obs, [[lane_left, lane_right]]))
         steering = calc_steering(lane_left, lane_right)

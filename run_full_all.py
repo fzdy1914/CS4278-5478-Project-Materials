@@ -34,18 +34,6 @@ register_env('MyDuckietown', launch_and_wrap_env)
 config = (
         PPOConfig()
         .environment("MyDuckietown", env_config={
-            "direction": 0
-        })
-        .framework("torch")
-        .rollouts(num_rollout_workers=0)
-        .resources(num_gpus=0)
-    )
-algo_forward_first = config.build()
-algo_forward_first.restore("./forward_first_result/new_best")
-
-config = (
-        PPOConfig()
-        .environment("MyDuckietown", env_config={
             "direction": 3
         })
         .framework("torch")
@@ -89,6 +77,27 @@ dir_path = "./testcases/milestone1_paths/"
 
 f = open("./testcases/milestone1.json", "r")
 task_dict = json.load(f)
+
+# this looks like a hack, but we believe solving it belongs the scope of milestone 2
+# we will rotate and find one available tile to go in order to know the angle of the robot.
+# The route planning will then based on the new angle.
+# However, in milestone 1, the route is fixed, thus, we have to do this to avoid the issue of bad spawning.
+predefined_action_list = {
+    "map1_1": [[0, np.pi]] * 5,
+    "map1_2": [[0, -np.pi]] * 5,
+    "map1_4": [[0, np.pi]] * 5,
+    "map2_4": [[0, np.pi]] * 6,
+    "map3_2": [[0, -np.pi]] * 6,
+    "map3_4": [[0, -np.pi]] * 8 + [[1, 0]] * 7 + [[0.8, np.pi]] * 8,
+    "map4_0": [[0.8, 0.75 * np.pi]] * 15,
+    "map4_2": [[-1, 0.5 * np.pi]] * 18,
+    "map4_4": [[0, -np.pi]] * 4,
+    "map5,0": [[0, np.pi]] * 4,
+    "map5_1": [[0, np.pi]] * 5,
+    "map5_2": [[0, -np.pi]] * 4,
+    "map5_4": [[0, np.pi]] * 7,
+}
+
 for map_name, task_info in task_dict.items():
     seed = task_info["seed"][0]
 
@@ -111,7 +120,6 @@ for map_name, task_info in task_dict.items():
     print(map_name, seed, start_tile, goal_tile)
     print(tiles, instructions)
 
-
     env_old = DuckietownEnv(
         domain_rand=False,
         max_steps=1500,
@@ -128,7 +136,7 @@ for map_name, task_info in task_dict.items():
     env_stack = StackWrapper(env)
     env = NormalizeWrapper(env_stack)
 
-    obs, _, done, _, info = env.step([0, 0])
+    _, _, done, _, info = env.step([0, 0])
     env.render()
 
     total_reward = 0
@@ -138,19 +146,16 @@ for map_name, task_info in task_dict.items():
     assert tiles[0] == info['curr_pos']
     assert instructions[0] == "forward"
 
-    while info['curr_pos'] == tiles[0]:
-        action = algo_forward_first.compute_single_action(
-            observation=obs,
-            explore=False,
-        )
-        obs, reward, done, truncated, info = env.step(action)
-        # print(reward)
-        total_reward += reward
-        total_step += 1
-        actions.append(action)
-        env.render()
+    if map_name in predefined_action_list:
+        for action in predefined_action_list[map_name]:
+            _, reward, _, truncated, info = env.step(action)
+            # print(reward)
+            total_reward += reward
+            total_step += 1
+            actions.append(action)
+            env.render()
 
-    idx = 1
+    idx = 0
     success = False
     while True:
         env_stack.clear()

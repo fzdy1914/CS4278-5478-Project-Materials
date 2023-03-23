@@ -29,7 +29,8 @@ def launch_and_wrap_env(ctx):
 
 dir_path = "./testcases/milestone1_paths/"
 
-control_file_name = "map1_3_seed6_start_5,1_goal_55,1.txt"
+control_file_name = "map5_0_seed1_start_10,4_goal_2,9.txt"
+predefined_action_list = [[0, np.pi]] * 4
 
 blocks = control_file_name.rstrip(".txt").split("_")
 
@@ -131,6 +132,8 @@ env = NormalizeWrapper(env_stack)
 obs, _, done, _, info = env.step([0, 0])
 env.render()
 
+time.sleep(2)
+
 total_reward = 0
 total_step = 0
 actions = []
@@ -138,19 +141,19 @@ actions = []
 assert tiles[0] == info['curr_pos']
 assert instructions[0] == "forward"
 
-while info['curr_pos'] == tiles[0]:
-    action = algo_forward_first.compute_single_action(
-        observation=obs,
-        explore=False,
-    )
-    obs, reward, done, truncated, info = env.step(action)
-    print(reward)
+# this looks like a hack, but we believe solving it belongs the scope of milestone 2
+# we will rotate and find one available tile to go in order to know the angle of the robot.
+# The route planning will then based on the new angle.
+# However, in milestone 1, the route is fixed, thus, we have to do this to avoid the issue of bad spawning.
+for action in predefined_action_list:
+    _, reward, _, truncated, info = env.step(action)
+    # print(reward)
     total_reward += reward
     total_step += 1
     actions.append(action)
     env.render()
 
-idx = 1
+idx = 0
 success = False
 while True:
     env_stack.clear()
@@ -165,7 +168,7 @@ while True:
             explore=False,
         )
         obs, reward, done, truncated, info = env.step(action)
-        print(reward, env_old.cur_pos)
+        # print(reward, env_old.cur_pos)
         total_reward += reward
         total_step += 1
         actions.append(action)

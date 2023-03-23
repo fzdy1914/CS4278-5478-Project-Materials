@@ -31,15 +31,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--max_steps", type=int, default=1500, help="max_steps")
 
 # You should set them to different map name and seed accordingly
-parser.add_argument("--map-name", "-m", default="map4_0", type=str)
-parser.add_argument("--seed", "-s", default=2, type=int)
-parser.add_argument("--start-tile", "-st", default="1,13", type=str, help="two numbers separated by a comma")
-parser.add_argument("--goal-tile", "-gt", default="3,3", type=str, help="two numbers separated by a comma")
+parser.add_argument("--map-name", "-m", default="map1_1", type=str)
+parser.add_argument("--seed", "-s", default=0, type=int)
+parser.add_argument("--start-tile", "-st", default="0,1", type=str, help="two numbers separated by a comma")
+parser.add_argument("--goal-tile", "-gt", default="75,1", type=str, help="two numbers separated by a comma")
 parser.add_argument(
     "--control_path", default="./map4_0_seed2_start_1,13_goal_3,3.txt", type=str, help="the control file to run"
 )
 parser.add_argument("--manual", default=False, type=str2bool, help="whether to manually control the robot")
-parser.add_argument("--control", default=False, type=str2bool, help="whether to control the robot")
+parser.add_argument("--control", default=True, type=str2bool, help="whether to control the robot")
 
 args = parser.parse_args()
 
