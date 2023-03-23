@@ -1,5 +1,16 @@
 # CS4278-5478-Project-Materials
 
+## Student Infomation
+- A0177381X Wang Chao
+- A0246715B Yang bo
+
+## Dependency
+- torch
+- ray: `pip install -U "ray[rllib]"`
+
+## Brief explanation
+`run_full_all.py` is the file to generate all control file.
+
 ## Installation
 
 We recommend the use of [Anaconda](https://docs.anaconda.com/anaconda/install/index.html) to create a virtual environment for the project.  
