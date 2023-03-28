@@ -40,7 +40,7 @@ args = parser.parse_args()
 
 # simulator instantiation
 env = DirectedBotEnv(
-    direction=3,
+    direction=4,
     domain_rand=False,
     max_steps=15000,
     map_name=args.map_name,
@@ -82,11 +82,12 @@ if args.manual:
         if key_handler[key.DOWN]:
             action = np.array([-0.44, 0])
         if key_handler[key.LEFT]:
-            action = np.array([0.35, +1])
+            action = np.array([0, +1])
         if key_handler[key.RIGHT]:
-            action = np.array([0.35, -1])
+            action = np.array([0, -1])
         if key_handler[key.SPACE]:
-            action = np.array([0, 0])
+            env.reset()
+            env.render()
 
         # Speed boost when pressing shift
         if key_handler[key.LSHIFT]:
@@ -96,11 +97,11 @@ if args.manual:
         # print(f"current pose = {info['curr_pos']}, step count = {env.unwrapped.step_count}, step reward = {reward:.3f}")
 
         env.render()
-        if done:
-            print(reward)
-            env.reset()
-            print(env.cur_pos, env.cur_angle, env.map_name)
-            env.render()
+        # if done:
+        #     print(reward)
+        #     env.reset()
+        #     print(env.cur_pos, env.cur_angle, env.map_name)
+        #     env.render()
 
     pyglet.clock.schedule_interval(update, 1.0 / env.unwrapped.frame_rate)
     pyglet.app.run()
