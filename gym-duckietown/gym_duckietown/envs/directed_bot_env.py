@@ -15,7 +15,7 @@ DIR_TO_NUM = {
     "forward_normal": 3,
 }
 
-uncertainty = 0.2
+uncertainty = 0.05
 
 
 def identity(x):
@@ -31,27 +31,27 @@ def floor(x):
 
 
 def new_ceil(x):
-    up = min(0.27, uncertainty)
-    down = max(-0.72, -uncertainty)
+    up = min(0.265, uncertainty)
+    down = max(-0.725, -uncertainty)
     pos = random.uniform(down, up)
 
-    return math.ceil(x) - 0.275 + pos
+    return math.ceil(x) - 0.27 + pos
 
 
 def new_floor(x):
-    up = min(0.27, uncertainty)
-    down = max(-0.72, -uncertainty)
+    up = min(0.265, uncertainty)
+    down = max(-0.725, -uncertainty)
     pos = random.uniform(down, up)
 
-    return math.floor(x) + 0.275 - pos
+    return math.floor(x) + 0.27 - pos
 
 
 def goal_ceil(x):
-    return math.ceil(x) - 0.275
+    return math.ceil(x) - 0.27
 
 
 def goal_floor(x):
-    return math.floor(x) + 0.275
+    return math.floor(x) + 0.27
 
 
 class DirectedBotEnv(DuckietownEnv):

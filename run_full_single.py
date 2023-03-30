@@ -29,8 +29,8 @@ def launch_and_wrap_env(ctx):
 
 dir_path = "./testcases/milestone1_paths/"
 
-control_file_name = "map5_0_seed1_start_10,4_goal_2,9.txt"
-predefined_action_list = [[0, np.pi]] * 4
+control_file_name = "map1_2_seed2_start_2,1_goal_25,1.txt"
+predefined_action_list = [[0, -np.pi]] * 5
 
 blocks = control_file_name.rstrip(".txt").split("_")
 
@@ -81,7 +81,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_forward_normal = config.build()
-algo_forward_normal.restore("./forward_normal_result/cur_best")
+algo_forward_normal.restore("D:\\forward_normal_result\\checkpoint_000550")
 
 config = (
         PPOConfig()
