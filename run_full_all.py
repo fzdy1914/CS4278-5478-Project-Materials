@@ -41,7 +41,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_forward_normal = config.build()
-algo_forward_normal.restore("D:\\forward_normal_result\\checkpoint_000542")
+algo_forward_normal.restore("./forward_normal_result/final_best")
 
 config = (
         PPOConfig()
@@ -53,7 +53,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_left = config.build()
-algo_left.restore("D:\\left_result\\checkpoint_000700")
+algo_left.restore("./left_result/final_best")
 
 config = (
         PPOConfig()

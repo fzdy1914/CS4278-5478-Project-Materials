@@ -40,7 +40,7 @@ def _train(args):
             observation, reward, done, info = env.step(action)
             observations.append(observation)
             actions.append(action)
-            
+
         env.reset()
 
     env.close()
