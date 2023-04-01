@@ -93,9 +93,10 @@ if __name__ == "__main__":
         config.gamma = 0.99
         config.evaluation_interval = 25
         config.evaluation_num_episodes = 5
+        config.grad_clip = 1e20
 
         algo = config.build()
-        # algo.restore("D:\\forward_normal_result\\checkpoint_000060")
+        algo.restore("D:\\forward_normal_result\\checkpoint_000676")
         # run manual training loop and print results after each iteration
         for _ in range(args.stop_iters):
             result = algo.train()

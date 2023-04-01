@@ -15,7 +15,7 @@ DIR_TO_NUM = {
     "forward_normal": 3,
 }
 
-uncertainty = 0.05
+uncertainty = 0.15
 
 
 def identity(x):
@@ -31,27 +31,27 @@ def floor(x):
 
 
 def new_ceil(x):
-    up = min(0.265, uncertainty)
-    down = max(-0.725, -uncertainty)
+    up = min(0.295, uncertainty)
+    down = max(-0.695, -uncertainty)
     pos = random.uniform(down, up)
 
-    return math.ceil(x) - 0.27 + pos
+    return math.ceil(x) - 0.3 + pos
 
 
 def new_floor(x):
-    up = min(0.265, uncertainty)
-    down = max(-0.725, -uncertainty)
+    up = min(0.295, uncertainty)
+    down = max(-0.695, -uncertainty)
     pos = random.uniform(down, up)
 
-    return math.floor(x) + 0.27 - pos
+    return math.floor(x) + 0.3 - pos
 
 
 def goal_ceil(x):
-    return math.ceil(x) - 0.27
+    return math.ceil(x) - 0.3
 
 
 def goal_floor(x):
-    return math.floor(x) + 0.27
+    return math.floor(x) + 0.3
 
 
 class DirectedBotEnv(DuckietownEnv):
@@ -397,7 +397,8 @@ class DirectedBotEnv(DuckietownEnv):
                 angle_diff = min(math.fabs((self.cur_angle % (2 * np.pi)) - self.ideal_angle),
                                  math.fabs((self.cur_angle % (2 * np.pi)) - 2 * np.pi - self.ideal_angle),
                                  math.fabs((self.cur_angle % (2 * np.pi)) + 2 * np.pi - self.ideal_angle))
-                reward -= 100 * dist + 25 * angle_diff
+                reward -= 400 * dist + 20 * angle_diff
+                reward = max(-100, reward)
             else:
                 reward = -100
             done = True

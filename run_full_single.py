@@ -81,7 +81,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_forward_normal = config.build()
-algo_forward_normal.restore("D:\\forward_normal_result\\checkpoint_000550")
+algo_forward_normal.restore("D:\\forward_normal_result\\checkpoint_000651")
 
 config = (
         PPOConfig()
