@@ -95,14 +95,20 @@ if __name__ == "__main__":
         config.evaluation_num_episodes = 5
 
         algo = config.build()
-        algo.restore("D:\\forward_normal_result\\checkpoint_000060")
+        # algo.restore("D:\\forward_normal_result\\checkpoint_000453")
+        checkpoint_dir = "D:\\forward_normal_result\\checkpoint_000453"
         # run manual training loop and print results after each iteration
         for _ in range(args.stop_iters):
-            result = algo.train()
-            checkpoint_dir = algo.save("D:\\forward_normal_result")
-            print("episode_reward_mean", result["episode_reward_mean"])
-            print("episode_len_mean", result["episode_len_mean"])
-            print(checkpoint_dir)
+            try:
+                result = algo.train()
+                checkpoint_dir = algo.save("D:\\forward_normal_result")
+                print("episode_reward_mean", result["episode_reward_mean"])
+                print("episode_len_mean", result["episode_len_mean"])
+                print(checkpoint_dir)
+            except ValueError as e:
+                algo.stop()
+                algo = algo.from_checkpoint(checkpoint_dir)
+                continue
         algo.stop()
     else:
         # automated run with Tune and grid search and TensorBoard

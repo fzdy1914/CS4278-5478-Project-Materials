@@ -29,8 +29,8 @@ def launch_and_wrap_env(ctx):
 
 dir_path = "./testcases/milestone1_paths/"
 
-control_file_name = "map5_0_seed1_start_10,4_goal_2,9.txt"
-predefined_action_list = [[0, np.pi]] * 4
+control_file_name = "map1_2_seed2_start_2,1_goal_25,1.txt"
+predefined_action_list = [[0, -np.pi]] * 5
 
 blocks = control_file_name.rstrip(".txt").split("_")
 
@@ -62,18 +62,6 @@ register_env('MyDuckietown', launch_and_wrap_env)
 config = (
         PPOConfig()
         .environment("MyDuckietown", env_config={
-            "direction": 0
-        })
-        .framework("torch")
-        .rollouts(num_rollout_workers=0)
-        .resources(num_gpus=0)
-    )
-algo_forward_first = config.build()
-algo_forward_first.restore("./forward_first_result/new_best")
-
-config = (
-        PPOConfig()
-        .environment("MyDuckietown", env_config={
             "direction": 3
         })
         .framework("torch")
@@ -81,7 +69,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_forward_normal = config.build()
-algo_forward_normal.restore("./forward_normal_result/cur_best")
+algo_forward_normal.restore("D:\\forward_normal_result\\checkpoint_000468")
 
 config = (
         PPOConfig()
@@ -93,7 +81,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_left = config.build()
-algo_left.restore("./left_result/new_best")
+algo_left.restore("./left_result/final_best")
 
 config = (
         PPOConfig()
@@ -105,7 +93,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_right = config.build()
-algo_right.restore("./right_result/old_best")
+algo_right.restore("./right_result/final_best")
 
 algos = {
     "forward": algo_forward_normal,

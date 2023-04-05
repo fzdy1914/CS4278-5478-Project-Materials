@@ -32,27 +32,27 @@ def floor(x):
 
 
 def new_ceil(x):
-    up = min(0.27, uncertainty)
-    down = max(-0.72, -uncertainty)
+    up = min(0.295, uncertainty)
+    down = max(-0.695, -uncertainty)
     pos = random.uniform(down, up)
 
-    return math.ceil(x) - 0.275 + pos
+    return math.ceil(x) - 0.3 + pos
 
 
 def new_floor(x):
-    up = min(0.27, uncertainty)
-    down = max(-0.72, -uncertainty)
+    up = min(0.295, uncertainty)
+    down = max(-0.695, -uncertainty)
     pos = random.uniform(down, up)
 
-    return math.floor(x) + 0.275 - pos
+    return math.floor(x) + 0.3 - pos
 
 
 def goal_ceil(x):
-    return math.ceil(x) - 0.275
+    return math.ceil(x) - 0.3
 
 
 def goal_floor(x):
-    return math.floor(x) + 0.275
+    return math.floor(x) + 0.3
 
 
 class DirectedBotEnv(DuckietownEnv):
@@ -132,7 +132,7 @@ class DirectedBotEnv(DuckietownEnv):
             )
         elif direction == 3:
             self.action_space = spaces.Box(
-                low=np.array([0.25, -np.pi]),
+                low=np.array([0.5, -np.pi]),
                 high=np.array([1, np.pi]),
                 dtype=np.float64
             )
@@ -398,6 +398,7 @@ class DirectedBotEnv(DuckietownEnv):
             reward = -100
 
         if self.get_grid_coords(self.cur_pos) != self.start_location:
+<<<<<<< HEAD
             if self.direction != 4:
                 if self.get_grid_coords(self.cur_pos) == self.goal_location:
                     reward = 100
@@ -409,6 +410,19 @@ class DirectedBotEnv(DuckietownEnv):
                 else:
                     reward = -100
                 done = True
+=======
+            if self.get_grid_coords(self.cur_pos) == self.goal_location:
+                reward = 100
+                dist = math.sqrt((self.cur_pos[0] - self.goal_pos[0]) ** 2 + (self.cur_pos[2] - self.goal_pos[1]) ** 2)
+                angle_diff = min(math.fabs((self.cur_angle % (2 * np.pi)) - self.ideal_angle),
+                                 math.fabs((self.cur_angle % (2 * np.pi)) - 2 * np.pi - self.ideal_angle),
+                                 math.fabs((self.cur_angle % (2 * np.pi)) + 2 * np.pi - self.ideal_angle))
+                reward -= 1000 * dist + 20 * angle_diff
+
+                reward *= 0.5
+
+                reward = max(-100, reward)
+>>>>>>> lane-follower
             else:
                 reward = -100
                 done = True
