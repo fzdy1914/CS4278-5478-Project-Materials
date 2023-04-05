@@ -105,7 +105,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_right = config.build()
-algo_right.restore("./right_result/good_enough")
+algo_right.restore("./right_result/old_best")
 
 algos = {
     "forward": algo_forward_normal,
