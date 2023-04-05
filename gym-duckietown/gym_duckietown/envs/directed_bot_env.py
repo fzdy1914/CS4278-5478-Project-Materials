@@ -132,7 +132,7 @@ class DirectedBotEnv(DuckietownEnv):
             )
         elif direction == 3:
             self.action_space = spaces.Box(
-                low=np.array([0.5, -np.pi]),
+                low=np.array([0.25, -np.pi]),
                 high=np.array([1, np.pi]),
                 dtype=np.float64
             )
