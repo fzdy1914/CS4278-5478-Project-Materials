@@ -15,7 +15,7 @@ DIR_TO_NUM = {
     "forward_normal": 3,
 }
 
-uncertainty = 0.15
+uncertainty = 0
 
 
 def identity(x):
@@ -101,7 +101,7 @@ class DirectedBotEnv(DuckietownEnv):
             )
         elif direction == 3:
             self.action_space = spaces.Box(
-                low=np.array([0.25, -np.pi]),
+                low=np.array([0.5, -np.pi]),
                 high=np.array([1, np.pi]),
                 dtype=np.float64
             )
@@ -397,7 +397,10 @@ class DirectedBotEnv(DuckietownEnv):
                 angle_diff = min(math.fabs((self.cur_angle % (2 * np.pi)) - self.ideal_angle),
                                  math.fabs((self.cur_angle % (2 * np.pi)) - 2 * np.pi - self.ideal_angle),
                                  math.fabs((self.cur_angle % (2 * np.pi)) + 2 * np.pi - self.ideal_angle))
-                reward -= 400 * dist + 20 * angle_diff
+                reward -= 1000 * dist + 20 * angle_diff
+
+                reward *= 0.5
+
                 reward = max(-100, reward)
             else:
                 reward = -100

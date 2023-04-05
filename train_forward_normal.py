@@ -95,8 +95,8 @@ if __name__ == "__main__":
         config.evaluation_num_episodes = 5
 
         algo = config.build()
-        algo.restore("D:\\forward_normal_result\\checkpoint_000697")
-        checkpoint_dir = "D:\\forward_normal_result\\checkpoint_000697"
+        # algo.restore("D:\\forward_normal_result\\checkpoint_000453")
+        checkpoint_dir = "D:\\forward_normal_result\\checkpoint_000453"
         # run manual training loop and print results after each iteration
         for _ in range(args.stop_iters):
             try:
