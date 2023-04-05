@@ -398,7 +398,6 @@ class DirectedBotEnv(DuckietownEnv):
             reward = -100
 
         if self.get_grid_coords(self.cur_pos) != self.start_location:
-<<<<<<< HEAD
             if self.direction != 4:
                 if self.get_grid_coords(self.cur_pos) == self.goal_location:
                     reward = 100
@@ -410,19 +409,6 @@ class DirectedBotEnv(DuckietownEnv):
                 else:
                     reward = -100
                 done = True
-=======
-            if self.get_grid_coords(self.cur_pos) == self.goal_location:
-                reward = 100
-                dist = math.sqrt((self.cur_pos[0] - self.goal_pos[0]) ** 2 + (self.cur_pos[2] - self.goal_pos[1]) ** 2)
-                angle_diff = min(math.fabs((self.cur_angle % (2 * np.pi)) - self.ideal_angle),
-                                 math.fabs((self.cur_angle % (2 * np.pi)) - 2 * np.pi - self.ideal_angle),
-                                 math.fabs((self.cur_angle % (2 * np.pi)) + 2 * np.pi - self.ideal_angle))
-                reward -= 1000 * dist + 20 * angle_diff
-
-                reward *= 0.5
-
-                reward = max(-100, reward)
->>>>>>> lane-follower
             else:
                 reward = -100
                 done = True
