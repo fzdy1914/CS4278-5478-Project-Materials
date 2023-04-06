@@ -25,7 +25,7 @@ class Initializer:
     def _get_rotation_dir(self, init_feat):
         return -1 if init_feat[0] * init_feat[1] < 0 else 1
 
-    def _check_boundary_closeness(self, hull):
+    def check_boundary_closeness(self, hull):
         for i in range(hull.shape[1]):
             j = i + 1 if i < hull.shape[1] - 1 else 0
             if abs(hull[1, i] - hull[1, j]) < 3 and abs(hull[0, i] - hull[0, j]) > 400:
@@ -44,7 +44,7 @@ class Initializer:
             self.too_close = False
         if not self.too_close and init_features is not None:
             _, hull = init_features
-            self.too_close = self._check_boundary_closeness(hull)
+            self.too_close = self.check_boundary_closeness(hull)
             logger.info("Closeness check: %s", self.too_close)
 
         # If we are not too close, we determine which way to pivot judging by the slant of the lane
@@ -55,7 +55,7 @@ class Initializer:
                 logger.info("Initialised rotation_dir: %s", self.rotation_dir)
                 sign = self.rotation_dir
             else:
-                sign = 1
+                sign = -1
         else:
             sign = self.rotation_dir
 

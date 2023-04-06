@@ -416,6 +416,7 @@ class DirectedBotEnv(DuckietownEnv):
         if self.direction == 4:
             location = self.goal_obj_position[self.map_name]
             dist = math.sqrt((location[0] - self.cur_pos[0]) ** 2 + (location[1] - self.cur_pos[2]) ** 2)
+            print(dist)
             reward += 10 * (1 - dist)
         else:
             if not done:

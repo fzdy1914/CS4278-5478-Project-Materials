@@ -86,6 +86,9 @@ f = open("./testcases/milestone2.json", "r")
 task_dict = json.load(f)
 
 for map_name, task_info in task_dict.items():
+    if "5_1" not in map_name:
+        continue
+
     seed = task_info["seed"][0]
 
     start_tile = tuple(task_info["start"])
@@ -119,7 +122,7 @@ for map_name, task_info in task_dict.items():
 
     action = [0, 0]
     obs, _, _, info = env_old.step(action)
-    # env_old.render()
+    env_old.render()
 
     mode = "Follower"
     while info['curr_pos'] == start_tile:
@@ -130,14 +133,14 @@ for map_name, task_info in task_dict.items():
                 obs, _, _, _, info = env.step([0, 0])
                 continue
             obs, reward, done, info = env_old.step(action)
-            # env_old.render()
+            env_old.render()
         else:
             action = algo_forward_normal.compute_single_action(
                 observation=obs,
                 explore=False,
             )
             obs, reward, done, truncated, info = env.step(action)
-            # env_old.render()
+            env_old.render()
 
     delta = (info['curr_pos'][0] - start_tile[0], info['curr_pos'][1] - start_tile[1])
     direction = delta_to_direction[delta]
