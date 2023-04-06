@@ -12,7 +12,7 @@ from intelligent_robots_project import Perception, Initializer
 from torchvision import models, transforms
 import torch
 
-from train_cnn import RegressionResNet
+from cnn_model import RegressionResNet
 
 
 def str2bool(v):

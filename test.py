@@ -12,7 +12,7 @@ from ray.tune import register_env
 from scipy.signal import find_peaks
 from torchvision import models, transforms
 import torch
-from train_cnn import RegressionResNet
+from cnn_model import RegressionResNet
 
 percept = Perception()
 initializer = Initializer()
