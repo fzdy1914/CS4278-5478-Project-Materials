@@ -37,47 +37,50 @@ register_env("MyDuckietown", launch_and_wrap_env)
 config = PPOConfig().environment("MyDuckietown", env_config={"direction": 3}).framework("torch").rollouts(num_rollout_workers=0).resources(num_gpus=0)
 algo_forward_normal = config.build()
 algo_forward_normal.restore("./forward_normal_result/final_best")
-#
-# config = (
-#         PPOConfig()
-#         .environment("MyDuckietown", env_config={
-#             "direction": 1
-#         })
-#         .framework("torch")
-#         .rollouts(num_rollout_workers=0)
-#         .resources(num_gpus=0)
-#     )
-# algo_left = config.build()
-# algo_left.restore("./left_result/final_best")
-#
-# config = (
-#         PPOConfig()
-#         .environment("MyDuckietown", env_config={
-#             "direction": 2
-#         })
-#         .framework("torch")
-#         .rollouts(num_rollout_workers=0)
-#         .resources(num_gpus=0)
-#     )
-# algo_right = config.build()
-# algo_right.restore("./right_result/final_best")
-#
-# algos = {
-#     "forward": algo_forward_normal,
-#     "left": algo_left,
-#     "right": algo_right,
-# }
+
+config = (
+        PPOConfig()
+        .environment("MyDuckietown", env_config={
+            "direction": 1
+        })
+        .framework("torch")
+        .rollouts(num_rollout_workers=0)
+        .resources(num_gpus=0)
+    )
+algo_left = config.build()
+algo_left.restore("./left_result/final_best")
+
+config = (
+        PPOConfig()
+        .environment("MyDuckietown", env_config={
+            "direction": 2
+        })
+        .framework("torch")
+        .rollouts(num_rollout_workers=0)
+        .resources(num_gpus=0)
+    )
+algo_right = config.build()
+algo_right.restore("./right_result/final_best")
+
+algos = {
+    "forward": algo_forward_normal,
+    "left": algo_left,
+    "right": algo_right,
+}
 
 f = open("./testcases/milestone2.json", "r")
 task_dict = json.load(f)
 
 for map_name, task_info in task_dict.items():
+    actions = []
+    total_reward = 0
+    total_step = 0
+
     seed = task_info["seed"][0]
 
     start_tile = tuple(task_info["start"])
     goal_tile = tuple(task_info["goal"])
 
-    tiles = [start_tile]
     intentions = {start_tile: "forward"}
 
     print(map_name, seed, start_tile, goal_tile)
@@ -101,7 +104,7 @@ for map_name, task_info in task_dict.items():
     map_img, goal, start_pos = env_old.get_task_info()
 
     # start first tile handling
-    robot = LaneFollower(intentions, map_img, goal, visualize=True)
+    robot = LaneFollower(intentions, map_img, goal, visualize=False)
 
     action = [0, 0]
     obs, _, _, info = env_old.step(action)
@@ -130,5 +133,42 @@ for map_name, task_info in task_dict.items():
     print(start_tile, info["curr_pos"], delta, direction)
 
     # forward, backward, left, right
-    control_path = generate_path(map_img, start_pos, goal, direction)
-    print(control_path)
+    instructions = generate_path(map_img, info["curr_pos"], goal, direction)
+
+    idx = 0
+    success = False
+    current_pos = info["curr_pos"]
+    while True:
+        env_stack.clear()
+        obs, _, _, _, info = env.step([0, 0])
+        if info['curr_pos'] != current_pos:
+            break
+
+        algo = algos[instructions[idx]]
+        while info['curr_pos'] == current_pos:
+            action = algo.compute_single_action(
+                observation=obs,
+                explore=False,
+            )
+            obs, reward, done, truncated, info = env.step(action)
+            # print(reward)
+            total_reward += reward
+            total_step += 1
+            actions.append(action)
+            env.render()
+        current_pos = info['curr_pos']
+        idx += 1
+        print(info['curr_pos'], idx, len(instructions))
+        if idx == len(instructions):
+            if info['curr_pos'] == goal_tile:
+                success = True
+            break
+
+    if success:
+        print("success")
+        print(total_reward, total_step, total_reward / total_step)
+    #     np.savetxt(f'./control_files/{map_name}_seed{seed}_start_{start_tile[0]},{start_tile[1]}_goal_{goal_tile[0]},{goal_tile[1]}.txt',
+    #                actions, delimiter=',')
+    # else:
+    #     print("fail", env_old.map_name, env_old.cur_pos, tiles[idx], instructions[idx])
+
