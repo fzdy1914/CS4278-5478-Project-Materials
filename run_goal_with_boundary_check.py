@@ -1,4 +1,5 @@
 import argparse
+import math
 
 import numpy as np
 import pyglet
@@ -101,11 +102,14 @@ if args.manual:
 
         obs, reward, done, info = env.step(action)
 
-        perception_output = percept.step(obs, init=True)
-        _, _, init_features, _ = perception_output
-        if init_features is not None:
-            _, hull = init_features
-            print(initializer.check_boundary_closeness(hull), done, reward)
+        # perception_output = percept.step(obs, init=True)
+        # _, _, init_features, _ = perception_output
+        # if init_features is not None:
+        #     _, hull = init_features
+        #     print(initializer.check_boundary_closeness(hull), done, reward)
+
+
+
         # print(f"current pose = {info['curr_pos']}, step count = {env.unwrapped.step_count}, step reward = {reward:.3f}")
         env.render()
         # if done:

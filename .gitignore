@@ -6,5 +6,6 @@
 gym-duckietown/test_dev/
 path_*.yaml
 
+dataset/
 #/left_result
 #/right_result

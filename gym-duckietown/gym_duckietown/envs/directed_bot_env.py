@@ -380,8 +380,10 @@ class DirectedBotEnv(DuckietownEnv):
         elif self.direction == 4:
             if not self.generate_goal_tile_forward_normal():
                 return self.reset()
+        elif self.direction == 5:
+            return obs
 
-        if not self._valid_pose(self.cur_pos, self.cur_angle):
+        if not self.valid_pose(self.cur_pos, self.cur_angle):
             return self.reset()
 
         _, _, done, info = self.step([0, 0])

@@ -556,7 +556,7 @@ class Simulator(gym.Env):
                     # logger.warning(msg)
                     continue
 
-                invalid = not self._valid_pose(propose_pos, propose_angle, safety_factor=1.3)
+                invalid = not self.valid_pose(propose_pos, propose_angle, safety_factor=1.3)
                 if invalid:
                     # msg = 'The spawn was invalid.'
                     # logger.warning(msg)
@@ -1322,7 +1322,7 @@ class Simulator(gym.Env):
         # No collision with any object
         return False
 
-    def _valid_pose(self, pos, angle, safety_factor=1.0):
+    def valid_pose(self, pos, angle, safety_factor=1.0):
         """
             Check that the agent is in a valid pose
 
@@ -1517,7 +1517,7 @@ class Simulator(gym.Env):
 
     def _compute_done_reward(self) -> DoneRewardInfo:
         # If the agent is not in a valid pose (on drivable tiles)
-        if not self._valid_pose(self.cur_pos, self.cur_angle):
+        if not self.valid_pose(self.cur_pos, self.cur_angle):
             msg = 'Stopping the simulator because we are at an invalid pose.'
             logger.info(msg)
             reward = REWARD_INVALID_POSE
