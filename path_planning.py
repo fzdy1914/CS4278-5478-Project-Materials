@@ -11,19 +11,20 @@ class AStarPlanner:
         self.x_width = self.max_x - self.min_x + 1
 
     class Node:
-        def __init__(self, x, y, cost, parent_index):
+        def __init__(self, x, y, direction, cost, parent_index):
             self.x = x
             self.y = y
+            self.d = direction
             self.cost = cost
             self.parent_index = parent_index
 
         def __str__(self):
-            return str(self.x) + "," + str(self.y) + "," + str(self.cost) + "," + str(self.parent_index)
+            return str(self.x) + "," + str(self.y) + "," + str(self.d) + "," + str(self.cost) + "," + str(self.parent_index)
 
-    def planning(self, sx, sy, gx, gy):
+    def planning(self, sx, sy, sd, gx, gy):
 
-        start_node = self.Node(sx, sy, 0.0, -1)
-        goal_node = self.Node(gx, gy, 0.0, -1)
+        start_node = self.Node(sx, sy, sd, 0.0, -1)
+        goal_node = self.Node(gx, gy, -1, 0.0, -1)
 
         open_set, closed_set = dict(), dict()
         open_set[self.calc_grid_index(start_node)] = start_node
@@ -39,6 +40,7 @@ class AStarPlanner:
             if current.x == goal_node.x and current.y == goal_node.y:
                 goal_node.parent_index = current.parent_index
                 goal_node.cost = current.cost
+                goal_node.d = current.d
                 break
 
             # Remove the item from the open set
@@ -49,7 +51,9 @@ class AStarPlanner:
 
             # expand_grid search grid based on motion model
             for i, _ in enumerate(self.motion):
-                node = self.Node(current.x + self.motion[i][0], current.y + self.motion[i][1], current.cost + self.motion[i][2], c_id)
+                node = self.Node(
+                    current.x + self.motion[i][0], current.y + self.motion[i][1], self.motion[i][2], current.cost + self.motion[i][3], c_id
+                )
                 n_id = self.calc_grid_index(node)
 
                 # If the node is not safe, do nothing
@@ -73,15 +77,17 @@ class AStarPlanner:
     def calc_final_path(self, goal_node, closed_set):
         # generate final course
         final_path = [(goal_node.x, goal_node.y)]
+        direction_path = [goal_node.d]
 
         parent_index = goal_node.parent_index
         while parent_index != -1:
             n = closed_set[parent_index]
             final_path.append((n.x, n.y))
+            direction_path.append(n.d)
 
             parent_index = n.parent_index
 
-        return final_path[::-1]
+        return direction_path[::-1]
 
     @staticmethod
     def calc_heuristic(n1, n2):
@@ -111,12 +117,12 @@ class AStarPlanner:
 
     @staticmethod
     def get_motion_model():
-        # dx, dy, cost
+        # dx, dy, direction, cost
         motion = [
-            [1, 0, 1],
-            [0, 1, 1],
-            [-1, 0, 1],
-            [0, -1, 1],
+            [1, 0, 3, 1],
+            [0, 1, 0, 1],
+            [-1, 0, 1, 1],
+            [0, -1, 2, 1],
         ]
 
         return motion

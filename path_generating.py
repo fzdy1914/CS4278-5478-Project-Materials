@@ -2,40 +2,30 @@ import numpy as np
 from path_planning import AStarPlanner
 
 
-def generate_path(map_img, start_pos, goal_pos, curr_direction):
+def generate_path(map_img, start_pos, goal_pos, init_d):
 
     obstacle_map = parse_map(map_img)
     a_star = AStarPlanner(obstacle_map)
     sy, sx = start_pos
     gy, gx = goal_pos
-    pos_path = a_star.planning(sx, sy, gx, gy)
+    sd = init_d
+    direction_path = a_star.planning(sx, sy, sd, gx, gy)
 
     # direction: 0: east; 1: north; 2: west; 3: south
-    direction_path = []
+    control_path = []
 
-    delta_to_direction = {
-        (0, 1): 0,
-        (-1, 0): 1,
-        (0, -1): 2,
-        (1, 0): 3,
-    }
+    for i in range(len(direction_path) - 1):
+        delta = direction_path[i + 1] - direction_path[i]
+        if delta == 0:
+            control_path.append("forward")
+        elif (delta == 1) or (delta == -3):
+            control_path.append("left")
+        elif (delta == -1) or (delta == 3):
+            control_path.append("right")
+        else:
+            control_path.append("backward")
 
-    for i in range(len(pos_path) - 1):
-        next_direction = delta_to_direction[(pos_path[i + 1][0] - pos_path[i][0], pos_path[i + 1][1] - pos_path[i][1])]
-
-        delta = next_direction - curr_direction
-        if delta:
-            if (delta == 1) or (delta == -3):
-                direction_path.append("left")
-            elif (delta == -1) or (delta == 3):
-                direction_path.append("right")
-            else:
-                direction_path.extend(["right", "right"])
-
-        direction_path.append("forward")
-        curr_direction = next_direction
-
-    return direction_path
+    return control_path
 
 
 def parse_map(map_img):

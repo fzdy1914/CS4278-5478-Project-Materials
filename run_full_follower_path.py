@@ -129,7 +129,6 @@ for map_name, task_info in task_dict.items():
     direction = delta_to_direction[delta]
     print(start_tile, info["curr_pos"], delta, direction)
 
-    # forward, left, right (back == right, right)
-    # you can change it to the way you like
-    direction_path = generate_path(map_img, start_pos, goal, direction)
-    print(direction_path)
+    # forward, backward, left, right
+    control_path = generate_path(map_img, start_pos, goal, direction)
+    print(control_path)
