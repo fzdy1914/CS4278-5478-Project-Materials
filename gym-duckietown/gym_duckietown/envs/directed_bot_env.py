@@ -396,6 +396,9 @@ class DirectedBotEnv(DuckietownEnv):
     def step(self, action):
         obs, reward, done, info = DuckietownEnv.step(self, action)
 
+        if self.direction == 5:
+            return obs, reward, done, info
+
         if reward < -100:
             reward = -100
 
@@ -418,7 +421,6 @@ class DirectedBotEnv(DuckietownEnv):
         if self.direction == 4:
             location = self.goal_obj_position[self.map_name]
             dist = math.sqrt((location[0] - self.cur_pos[0]) ** 2 + (location[1] - self.cur_pos[2]) ** 2)
-            print(dist)
             reward += 10 * (1 - dist)
         else:
             if not done:

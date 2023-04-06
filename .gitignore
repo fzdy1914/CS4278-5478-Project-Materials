@@ -7,5 +7,6 @@ gym-duckietown/test_dev/
 path_*.yaml
 
 dataset/
+__pycache__
 #/left_result
 #/right_result
