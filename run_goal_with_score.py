@@ -81,9 +81,13 @@ transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
-model = RegressionResNet(models.resnet50(pretrained=True), 1)
-model.eval()
-model.load_state_dict(torch.load("angle_model.pth"))
+model1 = RegressionResNet(models.resnet50(pretrained=True), 1)
+model1.eval()
+model1.load_state_dict(torch.load("angle_model.pth"))
+
+model2 = RegressionResNet(models.resnet50(pretrained=True), 1)
+model2.eval()
+model2.load_state_dict(torch.load("distance_model.pth"))
 # save map (example)
 # cv2.imwrite(env.map_name + ".png", env.get_occupancy_grid(env.map_data))
 
@@ -116,7 +120,11 @@ if args.manual:
 
         image = transform(obs)
         image = image.unsqueeze(dim=0)
-        print(model(image))
+        print(model1(image))
+        print(model2(image))
+        location = env.goal_obj_position[env.map_name]
+        dist = math.sqrt((location[0] - env.cur_pos[0]) ** 2 + (location[1] - env.cur_pos[2]) ** 2)
+        print(dist)
 
         # perception_output = percept.step(obs, init=True)
         # _, _, init_features, _ = perception_output
