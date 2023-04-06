@@ -86,6 +86,6 @@ for map_name, task_info in task_dict.items():
 
             obs = env.render_obs()
             # cv2.imwrite(f"dataset/{env.map_name}_{idx}_{i}_{score}.png", obs)
-            with open(f"dataset/{env.map_name}_{idx}_{i}_{score}.npy", 'wb') as f:
+            with open(f"angle_dataset/{env.map_name}_{idx}_{i}_{score}.npy", 'wb') as f:
                 np.save(f, obs)
                 f.close()

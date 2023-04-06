@@ -83,7 +83,7 @@ transform = transforms.Compose([
 ])
 model = RegressionResNet(models.resnet50(pretrained=True), 1)
 model.eval()
-model.load_state_dict(torch.load("goal_detection.pth"))
+model.load_state_dict(torch.load("angle_model.pth"))
 # save map (example)
 # cv2.imwrite(env.map_name + ".png", env.get_occupancy_grid(env.map_data))
 

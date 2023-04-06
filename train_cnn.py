@@ -58,7 +58,7 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
-    image_dir = "./dataset"
+    image_dir = "./angle_dataset"
 
     # Define the image transformations, if any
     transform = transforms.Compose([

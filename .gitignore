@@ -6,7 +6,9 @@
 gym-duckietown/test_dev/
 path_*.yaml
 
-dataset/
+angle_dataset/
+distance_dataset/
+
 __pycache__
 #/left_result
 #/right_result
