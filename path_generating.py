@@ -9,7 +9,7 @@ def generate_path(map_img, start_pos, goal_pos, init_d):
     gy, gx = goal_pos
     sd = init_d
     final_path, control_path = a_star.planning(sx, sy, sd, gx, gy)
-    path = list(zip(final_path, control_path))
+    path = [[final_path[i], control_path[i]] for i in range(len(final_path))]
 
     return path
 

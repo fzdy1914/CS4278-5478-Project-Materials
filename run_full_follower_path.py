@@ -38,6 +38,9 @@ config = PPOConfig().environment("MyDuckietown", env_config={"direction": 3}).fr
 algo_forward_normal = config.build()
 algo_forward_normal.restore("./forward_normal_result/final_best")
 
+right_action = [[-0.8, np.pi]] * 15 + [[1, 0]] * 12
+left_action = [[-0.9, -np.pi]] * 25
+
 config = (
         PPOConfig()
         .environment("MyDuckietown", env_config={
@@ -72,9 +75,6 @@ f = open("./testcases/milestone2.json", "r")
 task_dict = json.load(f)
 
 for map_name, task_info in task_dict.items():
-    if "map1" in map_name:
-        continue
-
     actions = []
     total_reward = 0
     total_step = 0
@@ -146,6 +146,28 @@ for map_name, task_info in task_dict.items():
         obs, _, _, _, info = env.step([0, 0])
         if info['curr_pos'] != instructions[idx][0]:
             break
+
+        if instructions[idx][1] == "backward":
+            if instructions[idx + 1][1] == "right":
+                for action in right_action:
+                    obs, reward, done, truncated, info = env.step(action)
+                    total_reward += reward
+                    total_step += 1
+                    actions.append(action)
+                    env.render()
+            elif instructions[idx + 1][1] == "left":
+                for action in left_action:
+                    obs, reward, done, truncated, info = env.step(action)
+                    total_reward += reward
+                    total_step += 1
+                    actions.append(action)
+                    env.render()
+            else:
+                print("error")
+
+            instructions[idx + 1][1] = "forward"
+            idx += 1
+            continue
 
         algo = algos[instructions[idx][1]]
         while info['curr_pos'] == instructions[idx][0]:

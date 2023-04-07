@@ -40,7 +40,7 @@ args = parser.parse_args()
 
 # simulator instantiation
 env = DirectedBotEnv(
-    direction=4,
+    direction=5,
     domain_rand=False,
     max_steps=15000,
     map_name=args.map_name,
@@ -94,7 +94,7 @@ if args.manual:
             action *= 3
 
         obs, reward, done, info = env.step(action)
-        # print(f"current pose = {info['curr_pos']}, step count = {env.unwrapped.step_count}, step reward = {reward:.3f}")
+        print(f"current pose = {info['curr_pos']}, step count = {env.unwrapped.step_count}, step reward = {reward:.3f}")
 
         env.render()
         # if done:
