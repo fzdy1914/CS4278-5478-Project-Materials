@@ -72,6 +72,9 @@ f = open("./testcases/milestone2.json", "r")
 task_dict = json.load(f)
 
 for map_name, task_info in task_dict.items():
+    if "map1" in map_name:
+        continue
+
     actions = []
     total_reward = 0
     total_step = 0
@@ -134,18 +137,18 @@ for map_name, task_info in task_dict.items():
 
     # forward, backward, left, right
     instructions = generate_path(map_img, info["curr_pos"], goal, direction)
+    print(instructions)
 
     idx = 0
     success = False
-    current_pos = info["curr_pos"]
     while True:
         env_stack.clear()
         obs, _, _, _, info = env.step([0, 0])
-        if info['curr_pos'] != current_pos:
+        if info['curr_pos'] != instructions[idx][0]:
             break
 
-        algo = algos[instructions[idx]]
-        while info['curr_pos'] == current_pos:
+        algo = algos[instructions[idx][1]]
+        while info['curr_pos'] == instructions[idx][0]:
             action = algo.compute_single_action(
                 observation=obs,
                 explore=False,
@@ -156,9 +159,7 @@ for map_name, task_info in task_dict.items():
             total_step += 1
             actions.append(action)
             env.render()
-        current_pos = info['curr_pos']
         idx += 1
-        print(info['curr_pos'], idx, len(instructions))
         if idx == len(instructions):
             if info['curr_pos'] == goal_tile:
                 success = True

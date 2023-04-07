@@ -84,7 +84,7 @@ class AStarPlanner:
 
     def calc_final_path(self, goal_node, closed_set):
         # generate final course
-        final_path = [(goal_node.x, goal_node.y)]
+        final_path = [(goal_node.y, goal_node.x)]
         direction_path = [goal_node.direction]
         control_path = [goal_node.control]
 
@@ -92,7 +92,7 @@ class AStarPlanner:
         while parent_index != -1:
             n = closed_set[parent_index]
 
-            final_path.append((n.x, n.y))
+            final_path.append((n.y, n.x))
             direction_path.append(n.direction)
             control_path.append(n.control)
 
@@ -143,9 +143,9 @@ class AStarPlanner:
             if delta == 0:
                 motions.append(motion + ["forward", 1])
             elif (delta == 1) or (delta == -3):
-                motions.append(motion + ["left", 1])
+                motions.append(motion + ["left", 1.1])
             elif (delta == -1) or (delta == 3):
-                motions.append(motion + ["right", 1])
+                motions.append(motion + ["right", 1.2])
             else:
                 motions.append(motion + ["backward", 5])
 
