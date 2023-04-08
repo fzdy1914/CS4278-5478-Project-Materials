@@ -146,6 +146,9 @@ for map_name, task_info in task_dict.items():
                 obs, _, _, _, info = env.step([0, 0])
                 continue
             obs, reward, done, info = env_old.step(action)
+            total_reward += reward
+            total_step += 1
+            actions.append(action)
             env_old.render()
         else:
             action = algo_forward_normal.compute_single_action(
@@ -153,6 +156,9 @@ for map_name, task_info in task_dict.items():
                 explore=False,
             )
             obs, reward, done, truncated, info = env.step(action)
+            total_reward += reward
+            total_step += 1
+            actions.append(action)
             env_old.render()
 
     delta = (info["curr_pos"][0] - start_tile[0], info["curr_pos"][1] - start_tile[1])
@@ -192,7 +198,7 @@ for map_name, task_info in task_dict.items():
                     obs, reward, done, truncated, info = env.step([0.65, np.pi])
                     total_reward += reward
                     total_step += 1
-                    actions.append(action)
+                    actions.append([0.65, np.pi])
                     env.render()
             else:
                 print("unsupported")
@@ -209,7 +215,7 @@ for map_name, task_info in task_dict.items():
             )
             if info['curr_pos'] == (6, 7) and "map4_0" == map_name:
                 obs, reward, done, truncated, info = env.step([0.8, -np.pi])
-                actions.append(action)
+                actions.append([0.8, -np.pi])
             else:
                 obs, reward, done, truncated, info = env.step(action)
                 actions.append(action)
