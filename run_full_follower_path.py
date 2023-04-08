@@ -96,8 +96,8 @@ f = open("./testcases/milestone2.json", "r")
 task_dict = json.load(f)
 
 for map_name, task_info in task_dict.items():
-    if "map4_0" != map_name:
-        continue
+    # if "map4_0" != map_name:
+    #     continue
 
     actions = []
     total_reward = 0
@@ -204,7 +204,7 @@ for map_name, task_info in task_dict.items():
                 observation=obs,
                 explore=False,
             )
-            if info['curr_pos'] == (6, 7):
+            if info['curr_pos'] == (6, 7) and "map4_0" == map_name:
                 obs, reward, done, truncated, info = env.step([0.8, -np.pi])
             else:
                 obs, reward, done, truncated, info = env.step(action)
@@ -284,17 +284,24 @@ for map_name, task_info in task_dict.items():
             env_old.step([0, -0.3])
             env.render()
 
-    while True:
-        obs, reward, done, info = env_old.step([1, 0])
-        env.render()
-        total_step += 1
-        total_reward += reward
-        actions.append([1, 0])
-        image = transform(obs).unsqueeze(dim=0)
-        dist = model_distance(image)[0][0]
+    obs = env_old.render_obs()
+    image = transform(obs).unsqueeze(dim=0)
+    dist = model_distance(image)[0][0]
+    if dist < 0.38:
+        while actions[-1][0] == 0:
+            actions.pop(-1)
+    else:
+        while True:
+            obs, reward, done, info = env_old.step([1, 0])
+            env.render()
+            total_step += 1
+            total_reward += reward
+            actions.append([1, 0])
+            image = transform(obs).unsqueeze(dim=0)
+            dist = model_distance(image)[0][0]
 
-        if dist < 0.38:
-            break
+            if dist < 0.38:
+                break
 
     location = goal_obj_position[env_old.map_name]
     dist = math.sqrt((location[0] - env_old.cur_pos[0]) ** 2 + (location[1] - env_old.cur_pos[2]) ** 2)
