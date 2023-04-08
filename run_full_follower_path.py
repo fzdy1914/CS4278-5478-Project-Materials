@@ -1,16 +1,23 @@
 import json
+import math
 import time
 
 import numpy as np
 import ray
+import torch
 from gymnasium.wrappers import EnvCompatibility
+
+from cnn_model import RegressionResNet
+from find_highest_peak import find_highest_peak
 from intelligent_robots_project import LaneFollower
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.tune import register_env
+from torchvision import models, transforms
 
 from gym_duckietown.envs import *
 from gym_duckietown.new_wrappers import NormalizeWrapper, ResizeWrapper, StackWrapper
 from path_generating import generate_path
+from gym_duckietown.envs.directed_bot_env import goal_obj_position
 
 delta_to_direction = {
     (1, 0): 0,
@@ -71,10 +78,27 @@ algos = {
     "right": algo_right,
 }
 
+transform = transforms.Compose([
+    transforms.ToPILImage(),
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
+model_angle = RegressionResNet(models.resnet50(pretrained=True), 1)
+model_angle.eval()
+model_angle.load_state_dict(torch.load("angle_model.pth"))
+
+model_distance = RegressionResNet(models.resnet50(pretrained=True), 1)
+model_distance.eval()
+model_distance.load_state_dict(torch.load("distance_model.pth"))
+
 f = open("./testcases/milestone2.json", "r")
 task_dict = json.load(f)
 
 for map_name, task_info in task_dict.items():
+    # if "map4_4" != map_name:
+    #     continue
+
     actions = []
     total_reward = 0
     total_step = 0
@@ -188,10 +212,88 @@ for map_name, task_info in task_dict.items():
             break
 
     if success:
-        print("success")
-        print(total_reward, total_step, total_reward / total_step)
-    #     np.savetxt(f'./control_files/{map_name}_seed{seed}_start_{start_tile[0]},{start_tile[1]}_goal_{goal_tile[0]},{goal_tile[1]}.txt',
-    #                actions, delimiter=',')
+        print("success to goal")
+    else:
+        print("failed")
+        continue
+
+    # turning right
+    obs_list = []
+    reward_list = []
+    for i in range(120):
+        obs, reward, _, _ = env_old.step([0, -0.3])
+        env.render()
+        obs_list.append(transform(obs))
+        reward_list.append(reward)
+
+    obs_tenser = torch.stack(obs_list)
+    output = model_angle(obs_tenser)
+
+    scores = output.squeeze().tolist()
+    idx = find_highest_peak(scores)
+
+    if scores[idx] > 0.9:
+        a = (idx + 1) // 10
+        b = (idx + 1) % 10
+        for i in range(a):
+            actions.append([0, -3])
+        if b > 0:
+            actions.append([0, -0.3 * b])
+        total_step += idx + 1
+        total_reward += sum(reward_list[:idx + 1])
+        for i in range(120 - idx - 1):
+            env_old.step([0, 0.3])
+            env.render()
+    else:
+        # reset to previous
+        for i in range(12):
+            env_old.step([0, 3])
+            env.render()
+
+        # turning left
+        obs_list = []
+        for i in range(120):
+            obs, reward, _, _ = env_old.step([0, 0.3])
+            env.render()
+            obs_list.append(transform(obs))
+            reward_list.append(reward)
+
+        obs_tenser = torch.stack(obs_list)
+        output = model_angle(obs_tenser)
+
+        scores = output.squeeze().tolist()
+        idx = find_highest_peak(scores)
+
+        a = (idx + 1) // 10
+        b = (idx + 1) % 10
+        for i in range(a):
+            actions.append([0, 3])
+        if b > 0:
+            actions.append([0, 0.3 * b])
+        total_step += idx + 1
+        total_reward += sum(reward_list[:idx + 1])
+        for i in range(120 - idx - 1):
+            env_old.step([0, -0.3])
+            env.render()
+
+    while True:
+        obs, reward, done, info = env_old.step([1, 0])
+        env.render()
+        total_step += 1
+        total_reward += reward
+        actions.append([1, 0])
+        image = transform(obs).unsqueeze(dim=0)
+        dist = model_distance(image)[0][0]
+
+        if dist < 0.38:
+            break
+
+    location = goal_obj_position[env_old.map_name]
+    dist = math.sqrt((location[0] - env_old.cur_pos[0]) ** 2 + (location[1] - env_old.cur_pos[2]) ** 2)
+
+    print(total_reward, total_step, total_reward / total_step, dist)
+    np.savetxt(f'./m2_control_files/{map_name}_seed{seed}_start_{start_tile[0]},{start_tile[1]}_goal_{goal_tile[0]},{goal_tile[1]}.txt',
+               actions, delimiter=',')
     # else:
     #     print("fail", env_old.map_name, env_old.cur_pos, tiles[idx], instructions[idx])
 

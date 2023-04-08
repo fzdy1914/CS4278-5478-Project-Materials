@@ -3,6 +3,8 @@ import math
 
 import cv2
 import numpy as np
+
+from find_highest_peak import find_highest_peak
 from gym_duckietown.envs import DirectedBotEnv
 from gym_duckietown.envs.directed_bot_env import floor, new_ceil, ceil, new_floor
 from intelligent_robots_project import Perception, Initializer
@@ -32,6 +34,7 @@ model_distance.load_state_dict(torch.load("distance_model.pth"))
 f = open("./testcases/milestone2.json", "r")
 task_dict = json.load(f)
 
+
 for map_name, task_info in task_dict.items():
     actions = []
     seed = task_info["seed"][0]
@@ -44,7 +47,7 @@ for map_name, task_info in task_dict.items():
 
     print(map_name, seed, start_tile, goal_tile)
 
-    env = DirectedBotEnv(
+    env_old = DirectedBotEnv(
         domain_rand=False,
         max_steps=15000,
         map_name=map_name,
@@ -57,7 +60,7 @@ for map_name, task_info in task_dict.items():
     )
 
     for idx, angle in enumerate([0, 0.5 * np.pi, np.pi, 1.5 * np.pi]):
-        env.reset()
+        env_old.reset()
 
         if angle > 7 / 4 * np.pi or angle <= 1 / 4 * np.pi:
             op_x = floor
@@ -71,32 +74,25 @@ for map_name, task_info in task_dict.items():
         else:
             op_x = new_floor
             op_y = floor
-        env.cur_pos[0] = op_x(env.cur_pos[0])
-        env.cur_pos[2] = op_y(env.cur_pos[2])
+        env_old.cur_pos[0] = op_x(env_old.cur_pos[0])
+        env_old.cur_pos[2] = op_y(env_old.cur_pos[2])
 
-        env.cur_angle = angle
+        env_old.cur_angle = angle
 
-        if not env.valid_pose(env.cur_pos, env.cur_angle):
+        if not env_old.valid_pose(env_old.cur_pos, env_old.cur_angle):
             continue
 
         # turning right
         obs_list = []
         for i in range(120):
-            obs, _, _, _ = env.step([0, -0.3])
+            obs, _, _, _ = env_old.step([0, -0.3])
             obs_list.append(transform(obs))
 
         input = torch.stack(obs_list)
         output = model_angle(input)
 
         scores = output.squeeze().tolist()
-        peaks, _ = find_peaks(scores, distance = 5)
-        highest_peak_index = peaks[np.argmax(np.array(scores)[peaks])]
-        start = max(0, highest_peak_index - 1)
-        end = min(len(scores), highest_peak_index + 2)
-        peak_positions = np.arange(start, end)
-        peak_scores = np.array(scores[start:end])
-        mean = np.average(peak_positions, weights=peak_scores)
-        idx = int(mean)
+        idx = find_highest_peak(scores)
 
         if scores[idx] > 0.9:
             a = (idx + 1) // 10
@@ -106,30 +102,23 @@ for map_name, task_info in task_dict.items():
             if b > 0:
                 actions.append([0, -0.3 * b])
             for i in range(120 - idx - 1):
-                env.step([0, 0.3])
+                env_old.step([0, 0.3])
         else:
             # reset to previous
             for i in range(12):
-                env.step([0, 3])
+                env_old.step([0, 3])
 
             # turning left
             obs_list = []
             for i in range(120):
-                obs, _, _, _ = env.step([0, 0.3])
+                obs, _, _, _ = env_old.step([0, 0.3])
                 obs_list.append(transform(obs))
 
             input = torch.stack(obs_list)
             output = model_angle(input)
 
             scores = output.squeeze().tolist()
-            peaks, _ = find_peaks(scores, distance=5)
-            highest_peak_index = peaks[np.argmax(np.array(scores)[peaks])]
-            start = max(0, highest_peak_index - 1)
-            end = min(len(scores), highest_peak_index + 2)
-            peak_positions = np.arange(start, end)
-            peak_scores = np.array(scores[start:end])
-            mean = np.average(peak_positions, weights=peak_scores)
-            idx = int(mean)
+            idx = find_highest_peak(scores)
 
             a = (idx + 1) // 10
             b = (idx + 1) % 10
@@ -138,10 +127,10 @@ for map_name, task_info in task_dict.items():
             if b > 0:
                 actions.append([0, 0.3 * b])
             for i in range(120 - idx - 1):
-                env.step([0, -0.3])
+                env_old.step([0, -0.3])
 
         while True:
-            obs, reward, done, info = env.step([1, 0])
+            obs, reward, done, info = env_old.step([1, 0])
             actions.append([1, 0])
             image = transform(obs).unsqueeze(dim=0)
             dist = model_distance(image)[0][0]
@@ -151,7 +140,7 @@ for map_name, task_info in task_dict.items():
 
         print("is_done", done, reward, info)
         print(actions)
-        location = env.goal_obj_position[env.map_name]
-        dist = math.sqrt((location[0] - env.cur_pos[0]) ** 2 + (location[1] - env.cur_pos[2]) ** 2)
+        location = env_old.goal_obj_position[env_old.map_name]
+        dist = math.sqrt((location[0] - env_old.cur_pos[0]) ** 2 + (location[1] - env_old.cur_pos[2]) ** 2)
         print(dist)
-        cv2.imwrite(env.map_name + "-" + str(idx) + ".png", env.render_obs())
+        cv2.imwrite(env_old.map_name + "-" + str(idx) + ".png", env_old.render_obs())
