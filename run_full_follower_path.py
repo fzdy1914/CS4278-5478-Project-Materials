@@ -96,7 +96,7 @@ f = open("./testcases/milestone2.json", "r")
 task_dict = json.load(f)
 
 for map_name, task_info in task_dict.items():
-    if "map4_4" != map_name:
+    if "map4_0" != map_name:
         continue
 
     actions = []
@@ -204,8 +204,11 @@ for map_name, task_info in task_dict.items():
                 observation=obs,
                 explore=False,
             )
-            obs, reward, done, truncated, info = env.step(action)
-            # print(reward)
+            if info['curr_pos'] == (6, 7):
+                obs, reward, done, truncated, info = env.step([0.8, -np.pi])
+            else:
+                obs, reward, done, truncated, info = env.step(action)
+            # print(reward, info)
             total_reward += reward
             total_step += 1
             actions.append(action)
