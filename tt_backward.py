@@ -33,16 +33,16 @@ actions = []
 env = DirectedBotEnv(
     domain_rand=False,
     max_steps=1500,
-    map_name="map3_1",
+    map_name="map4_4",
     seed=4,
-    user_tile_start="6,11",
-    goal_tile="6,11",
+    user_tile_start="5,11",
+    goal_tile="5,11",
     randomize_maps_on_reset=False,
     # my_mode="none",
     direction=5,
 )
 
-for idx, angle in enumerate([0, 0.5 * np.pi, np.pi, 1.5 * np.pi]):
+for idx, angle in enumerate([1.5 * np.pi]):
     env.reset()
 
     if angle > 7 / 4 * np.pi or angle <= 1 / 4 * np.pi:
@@ -69,14 +69,11 @@ for idx, angle in enumerate([0, 0.5 * np.pi, np.pi, 1.5 * np.pi]):
     c = info["curr_pos"]
     total_reward = 0
     total_step = 0
-    for i in range(15):
-        env.step([-0.8, np.pi])
+    cur = info['curr_pos']
+    while cur == info['curr_pos']:
+        obs, reward, done, info = env.step([0.65, np.pi])
         env.render()
         print(env.get_grid_coords(env.cur_pos), total_step, reward)
-
-    for i in range(12):
-        env.step([1, 0])
-        env.render()
 
     time.sleep(10)
     break

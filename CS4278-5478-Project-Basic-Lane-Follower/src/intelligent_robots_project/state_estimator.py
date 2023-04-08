@@ -234,7 +234,7 @@ class StateEstimator:
         estimated_angle = -np.arctan(slope)  # angle of the robot in tile frame
         estimated_distance = intercept / np.sqrt(slope * slope + 1)
 
-        if -0.1 < estimated_angle < 0.1 and 0.2 < estimated_distance < 0.4:
+        if -0.1 < estimated_angle < 0.1 and 0.2 < estimated_distance < 0.4 and self._local is not None:
             self.can_stop = True
 
         dist_thresh = 0.8
