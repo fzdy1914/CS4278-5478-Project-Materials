@@ -16,7 +16,7 @@ DIR_TO_NUM = {
     "goal": 4,
 }
 
-uncertainty = 0
+uncertainty = 0.1
 
 goal_obj_position = {
     "map1_0": [5.5, 0.9, 0.2],
@@ -141,13 +141,13 @@ class DirectedBotEnv(DuckietownEnv):
         logger.info('using DirectedBotEnv')
         if self.direction == 2:
             self.action_space = spaces.Box(
-                low=np.array([.25, -np.pi]),
+                low=np.array([.5, -np.pi]),
                 high=np.array([1, 0]),
                 dtype=np.float64
             )
         elif self.direction == 1:
             self.action_space = spaces.Box(
-                low=np.array([.25, -0.5 * np.pi]),
+                low=np.array([.5, -0.5 * np.pi]),
                 high=np.array([1, np.pi]),
                 dtype=np.float64
             )
@@ -159,7 +159,7 @@ class DirectedBotEnv(DuckietownEnv):
             )
         elif direction == 3:
             self.action_space = spaces.Box(
-                low=np.array([0.25, -np.pi]),
+                low=np.array([0.8, -np.pi]),
                 high=np.array([1, np.pi]),
                 dtype=np.float64
             )
@@ -437,7 +437,8 @@ class DirectedBotEnv(DuckietownEnv):
                     angle_diff = min(math.fabs((self.cur_angle % (2 * np.pi)) - self.ideal_angle),
                                      math.fabs((self.cur_angle % (2 * np.pi)) - 2 * np.pi - self.ideal_angle),
                                      math.fabs((self.cur_angle % (2 * np.pi)) + 2 * np.pi - self.ideal_angle))
-                    reward -= 100 * dist + 25 * angle_diff
+                    reward -= 1000 * dist + 50 * angle_diff
+                    reward = max(reward, -100)
                 else:
                     reward = -100
                 done = True

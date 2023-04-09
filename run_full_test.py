@@ -23,9 +23,6 @@ f = open("./testcases/milestone2.json", "r")
 task_dict = json.load(f)
 
 for map_name, task_info in task_dict.items():
-    if "map4_4" != map_name:
-        continue
-
     total_reward = 0
     total_step = 0
 
