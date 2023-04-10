@@ -38,7 +38,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo = config.build()
-algo.restore("D:\\right_result\\checkpoint_000690")
+algo.restore("D:\\right_result\\checkpoint_000563")
 
 env = launch_and_wrap_env(None)
 

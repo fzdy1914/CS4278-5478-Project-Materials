@@ -141,13 +141,13 @@ class DirectedBotEnv(DuckietownEnv):
         logger.info('using DirectedBotEnv')
         if self.direction == 2:
             self.action_space = spaces.Box(
-                low=np.array([.5, -np.pi]),
+                low=np.array([.25, -np.pi]),
                 high=np.array([1, 0]),
                 dtype=np.float64
             )
         elif self.direction == 1:
             self.action_space = spaces.Box(
-                low=np.array([.5, -0.5 * np.pi]),
+                low=np.array([.25, -0.5 * np.pi]),
                 high=np.array([1, np.pi]),
                 dtype=np.float64
             )
@@ -364,6 +364,11 @@ class DirectedBotEnv(DuckietownEnv):
     def generate_goal_tile_forward_normal(self):
         start_location = self.get_grid_coords(self.cur_pos)
         self.start_location = start_location
+        tile = self._get_tile(start_location[0], start_location[1])
+        kind = tile['kind']
+
+        if kind == 'curve_right' or kind == 'curve_left':
+            return False
 
         if math.fabs(self.cur_angle) > 1 / 8 * np.pi and \
                 math.fabs(self.cur_angle - 1 / 2 * np.pi) > 1 / 8 * np.pi and \
@@ -372,20 +377,48 @@ class DirectedBotEnv(DuckietownEnv):
             return False
 
         if self.cur_angle > 7 / 4 * np.pi or self.cur_angle <= 1 / 4 * np.pi:
+            action = (1, 0)
+            ideal_op_x = math.floor
+            ideal_op_y = goal_ceil
+            ideal_angle = 0
             op_x = floor
             op_y = new_ceil
+
         elif 1 / 4 * np.pi < self.cur_angle <= 3 / 4 * np.pi:
+            action = (0, -1)
+            ideal_op_x = goal_ceil
+            ideal_op_y = math.ceil
+            ideal_angle = 0.5 * np.pi
             op_x = new_ceil
             op_y = ceil
+
         elif 3 / 4 * np.pi < self.cur_angle <= 5 / 4 * np.pi:
+            action = (-1, 0)
+            ideal_op_x = math.ceil
+            ideal_op_y = goal_floor
+            ideal_angle = np.pi
             op_x = ceil
             op_y = new_floor
         else:
+            action = (0, 1)
+            ideal_op_x = goal_floor
+            ideal_op_y = math.floor
+            ideal_angle = 1.5 * np.pi
             op_x = new_floor
             op_y = floor
-        self.cur_pos[0] = op_x(self.cur_pos[0])
-        self.cur_pos[2] = op_y(self.cur_pos[2])
-        return True
+
+        new_pos_x = start_location[0] + action[0]
+        new_pos_y = start_location[1] + action[1]
+        for tile in self.drivable_tiles:
+            if tile['coords'] == (new_pos_x, new_pos_y):
+                self.goal_location = (new_pos_x, new_pos_y)
+                self.cur_pos[0] = op_x(self.cur_pos[0])
+                self.cur_pos[2] = op_y(self.cur_pos[2])
+                self.goal_pos = (ideal_op_x(self.cur_pos[0] + action[0]), ideal_op_y(self.cur_pos[2] + action[1]))
+                self.ideal_angle = ideal_angle
+                return True
+
+        return False
 
     def reset(self):
         obs = DuckietownEnv.reset(self)

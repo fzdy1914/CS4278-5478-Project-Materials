@@ -43,7 +43,7 @@ register_env("MyDuckietown", launch_and_wrap_env)
 
 config = PPOConfig().environment("MyDuckietown", env_config={"direction": 3}).framework("torch").rollouts(num_rollout_workers=0).resources(num_gpus=0)
 algo_forward_normal = config.build()
-algo_forward_normal.restore("./forward_normal_result/final_best")
+algo_forward_normal.restore("./forward_normal_result/final_hard_best")
 
 right_action = [[-0.8, np.pi]] * 15 + [[1, 0]] * 12
 left_action = [[-0.9, -np.pi]] * 25
@@ -96,7 +96,7 @@ f = open("./testcases/milestone2.json", "r")
 task_dict = json.load(f)
 
 for map_name, task_info in task_dict.items():
-    if "map4_4" != map_name:
+    if "map1" in map_name or "map2" in map_name or "map3" in map_name:
         continue
 
     actions = []
