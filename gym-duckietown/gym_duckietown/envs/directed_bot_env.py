@@ -141,13 +141,13 @@ class DirectedBotEnv(DuckietownEnv):
         logger.info('using DirectedBotEnv')
         if self.direction == 2:
             self.action_space = spaces.Box(
-                low=np.array([.25, -np.pi]),
+                low=np.array([.4, -np.pi]),
                 high=np.array([1, 0]),
                 dtype=np.float64
             )
         elif self.direction == 1:
             self.action_space = spaces.Box(
-                low=np.array([.25, -0.5 * np.pi]),
+                low=np.array([.5, -0.5 * np.pi]),
                 high=np.array([1, np.pi]),
                 dtype=np.float64
             )
