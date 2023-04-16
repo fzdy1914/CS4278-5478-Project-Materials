@@ -39,7 +39,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo = config.build()
-algo.restore("D:\\forward_result\\checkpoint_000312")
+algo.restore("D:\\forward_result\\checkpoint_000968")
 
 env_old = DirectedBotEnv(
         direction=0,

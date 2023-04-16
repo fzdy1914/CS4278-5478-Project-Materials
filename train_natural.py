@@ -41,7 +41,7 @@ parser.add_argument(
 
 def launch_and_wrap_env(ctx):
     env = DirectedBotEnv(
-        direction=0,
+        direction=-1,
         domain_rand=False,
         max_steps=100,
         map_name="map2_0",
@@ -95,11 +95,11 @@ if __name__ == "__main__":
         config.evaluation_num_episodes = 5
 
         algo = config.build()
-        # algo.restore("D:\\forward_result\\checkpoint_000001")
+        algo.restore("D:\\natural_result\\checkpoint_000419")
         # run manual training loop and print results after each iteration
         for _ in range(args.stop_iters):
             result = algo.train()
-            checkpoint_dir = algo.save("D:\\forward_result")
+            checkpoint_dir = algo.save("D:\\natural_result")
             print("episode_reward_mean", result["episode_reward_mean"])
             print("episode_len_mean", result["episode_len_mean"])
             print(checkpoint_dir)

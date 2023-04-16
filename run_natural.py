@@ -13,7 +13,7 @@ from gym_duckietown.envs import *
 
 def launch_and_wrap_env(ctx):
     env = DirectedBotEnv(
-        direction=1,
+        direction=-1,
         domain_rand=False,
         max_steps=100,
         map_name="map2_0",
@@ -38,6 +38,25 @@ config = (
         .resources(num_gpus=0)
     )
 algo = config.build()
+algo.restore("D:\\natural_result\\checkpoint_000810")
 
-policy = algo.get_policy()
-print(policy.model)
+env = launch_and_wrap_env(None)
+
+while True:
+    obs, _, done, _, _ = env.step([0, 0])
+    env.render()
+
+    while not done:
+        # Compute an action (`a`).
+        action = algo.compute_single_action(
+            observation=obs,
+            explore=False,
+        )
+        # Send the computed action `a` to the env.
+        obs, reward, done, truncated, _ = env.step(action)
+        print(action, reward)
+        env.render()
+        # Is the episode `done`? -> Reset.
+    env.reset()
+# time.sleep(100)
+# algo.stop()

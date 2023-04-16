@@ -46,6 +46,7 @@ goal_obj_position = {
     "map5_4": [14.9, 9.46, 0.2]
 }
 
+
 def identity(x):
     return x
 
@@ -54,8 +55,16 @@ def ceil(x):
     return math.ceil(x) - 0.0001
 
 
+def ceil_safe(x):
+    return math.ceil(x) - 0.15
+
+
 def floor(x):
     return math.floor(x) + 0.0001
+
+
+def floor_safe(x):
+    return math.floor(x) + 0.15
 
 
 def new_ceil(x):
@@ -133,7 +142,7 @@ class DirectedBotEnv(DuckietownEnv):
         if self.direction == 3:
             my_mode = "none"
         if self.direction == 0:
-            my_mode = "start"
+            my_mode = "none"
         if self.direction == 4:
             my_mode = "goal"
 
@@ -153,7 +162,7 @@ class DirectedBotEnv(DuckietownEnv):
             )
         elif direction == 0:
             self.action_space = spaces.Box(
-                low=np.array([-0.25, -np.pi]),
+                low=np.array([0.5, -np.pi]),
                 high=np.array([1, np.pi]),
                 dtype=np.float64
             )
@@ -169,6 +178,12 @@ class DirectedBotEnv(DuckietownEnv):
                 high=np.array([1, np.pi]),
                 dtype=np.float64
             )
+        elif direction == -1:
+            self.action_space = spaces.Box(
+                low=np.array([0.5, -np.pi]),
+                high=np.array([1, np.pi]),
+                dtype=np.float64
+            )
 
         self.observation_space = spaces.Box(
                 low=0,
@@ -178,24 +193,57 @@ class DirectedBotEnv(DuckietownEnv):
             )
 
     def generate_goal_tile_forward_first(self):
-        self.start_location = self.get_grid_coords(self.cur_pos)
-        next_location = self.next_locations[self.map_name]
+        start_location = self.get_grid_coords(self.cur_pos)
+        self.start_location = start_location
 
-        action = (next_location[0] - self.start_location[0], next_location[1] - self.start_location[1])
+        if math.fabs(self.cur_angle) > 1 / 8 * np.pi and \
+                math.fabs(self.cur_angle - 1 / 2 * np.pi) > 1 / 8 * np.pi and \
+                math.fabs(self.cur_angle - np.pi) > 1 / 8 * np.pi and \
+                math.fabs(self.cur_angle - 3 / 2 * np.pi) > 1 / 8 * np.pi:
+            return False
 
-        ideal_op_x, ideal_op_y, ideal_angle = self.actions[action]
+        if self.cur_angle > 7 / 4 * np.pi or self.cur_angle <= 1 / 4 * np.pi:
+            action = (1, 0)
+            ideal_op_x = math.floor
+            ideal_op_y = goal_ceil
+            ideal_angle = 0
+            op_x = floor_safe
+            op_y = identity
 
-        new_pos_x = self.start_location[0] + action[0]
-        new_pos_y = self.start_location[1] + action[1]
+        elif 1 / 4 * np.pi < self.cur_angle <= 3 / 4 * np.pi:
+            action = (0, -1)
+            ideal_op_x = goal_ceil
+            ideal_op_y = math.ceil
+            ideal_angle = 0.5 * np.pi
+            op_x = identity
+            op_y = ceil_safe
 
+        elif 3 / 4 * np.pi < self.cur_angle <= 5 / 4 * np.pi:
+            action = (-1, 0)
+            ideal_op_x = math.ceil
+            ideal_op_y = goal_floor
+            ideal_angle = np.pi
+            op_x = ceil_safe
+            op_y = identity
+        else:
+            action = (0, 1)
+            ideal_op_x = goal_floor
+            ideal_op_y = math.floor
+            ideal_angle = 1.5 * np.pi
+            op_x = identity
+            op_y = floor_safe
+
+        new_pos_x = start_location[0] + action[0]
+        new_pos_y = start_location[1] + action[1]
         for tile in self.drivable_tiles:
             if tile['coords'] == (new_pos_x, new_pos_y):
                 self.goal_location = (new_pos_x, new_pos_y)
+                self.cur_pos[0] = op_x(self.cur_pos[0])
+                self.cur_pos[2] = op_y(self.cur_pos[2])
                 self.goal_pos = (ideal_op_x(self.cur_pos[0] + action[0]), ideal_op_y(self.cur_pos[2] + action[1]))
                 self.ideal_angle = ideal_angle
                 return True
 
-        print("b")
         return False
 
     def generate_goal_tile_left(self):
@@ -442,6 +490,9 @@ class DirectedBotEnv(DuckietownEnv):
                 return self.reset()
         elif self.direction == 5:
             return obs
+        elif self.direction == -1:
+            start_location = self.get_grid_coords(self.cur_pos)
+            self.start_location = start_location
 
         if not self.valid_pose(self.cur_pos, self.cur_angle):
             return self.reset()
@@ -457,6 +508,15 @@ class DirectedBotEnv(DuckietownEnv):
         obs, reward, done, info = DuckietownEnv.step(self, action)
 
         if self.direction == 5:
+            return obs, reward, done, info
+
+        if self.direction == -1:
+            if reward < -100:
+                reward = -10
+            if not done:
+                reward -= 1
+            if self.get_grid_coords(self.cur_pos) != self.start_location:
+                done = True
             return obs, reward, done, info
 
         if reward < -100:
