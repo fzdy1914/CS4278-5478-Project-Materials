@@ -6,6 +6,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
+
 class GoalImageDataset(Dataset):
     def __init__(self, image_dir, transform=None):
         self.image_dir = image_dir

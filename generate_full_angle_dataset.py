@@ -1,17 +1,9 @@
 import json
 import math
-import time
-
-import cv2
 import numpy as np
-import ray
-from gymnasium.wrappers import EnvCompatibility
-from ray.rllib.algorithms.ppo import PPOConfig
-from ray.tune import register_env
 
 from gym_duckietown.envs import *
 from gym_duckietown.envs.directed_bot_env import floor, new_ceil, ceil, new_floor
-from gym_duckietown.new_wrappers import NormalizeWrapper, ResizeWrapper, StackWrapper
 
 
 f = open("./testcases/milestone2.json", "r")
