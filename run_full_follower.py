@@ -1,7 +1,4 @@
 import json
-import time
-
-import numpy as np
 import ray
 from gymnasium.wrappers import EnvCompatibility
 from intelligent_robots_project import LaneFollower
@@ -10,14 +7,6 @@ from ray.tune import register_env
 
 from gym_duckietown.envs import *
 from gym_duckietown.new_wrappers import NormalizeWrapper, ResizeWrapper, StackWrapper
-
-
-delta_to_direction = {
-    (1, 0): 0,
-    (0, -1): 1,
-    (-1, 0): 2,
-    (0, 1): 3,
-}
 
 
 def launch_and_wrap_env(ctx):
@@ -50,44 +39,14 @@ config = (
         .resources(num_gpus=0)
     )
 algo_forward_normal = config.build()
-algo_forward_normal.restore("./forward_normal_result/final_best")
-#
-# config = (
-#         PPOConfig()
-#         .environment("MyDuckietown", env_config={
-#             "direction": 1
-#         })
-#         .framework("torch")
-#         .rollouts(num_rollout_workers=0)
-#         .resources(num_gpus=0)
-#     )
-# algo_left = config.build()
-# algo_left.restore("./left_result/final_best")
-#
-# config = (
-#         PPOConfig()
-#         .environment("MyDuckietown", env_config={
-#             "direction": 2
-#         })
-#         .framework("torch")
-#         .rollouts(num_rollout_workers=0)
-#         .resources(num_gpus=0)
-#     )
-# algo_right = config.build()
-# algo_right.restore("./right_result/final_best")
-#
-# algos = {
-#     "forward": algo_forward_normal,
-#     "left": algo_left,
-#     "right": algo_right,
-# }
+algo_forward_normal.restore("./forward_normal_result/final_hard_best")
 
 f = open("./testcases/milestone2.json", "r")
 task_dict = json.load(f)
 
 for map_name, task_info in task_dict.items():
-    if "5_1" not in map_name:
-        continue
+    # if "5_1" not in map_name:
+    #     continue
 
     seed = task_info["seed"][0]
 
@@ -143,5 +102,4 @@ for map_name, task_info in task_dict.items():
             env_old.render()
 
     delta = (info['curr_pos'][0] - start_tile[0], info['curr_pos'][1] - start_tile[1])
-    direction = delta_to_direction[delta]
-    print(start_tile, info['curr_pos'], delta, direction)
+    print(start_tile, info['curr_pos'], delta)

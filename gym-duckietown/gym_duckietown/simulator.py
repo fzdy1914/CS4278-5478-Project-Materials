@@ -1774,6 +1774,7 @@ class Simulator(gym.Env):
                 self.window.close()
             return
 
+        return
         top_down = mode == 'top_down'
         # Render the image
         img = self._render_img(
