@@ -8,6 +8,8 @@ path_*.yaml
 
 angle_dataset/
 distance_dataset/
+start_angle_dataset/
+start_tile_dataset/
 
 __pycache__
 #/left_result

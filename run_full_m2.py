@@ -92,12 +92,20 @@ model_distance = RegressionResNet(models.resnet50(pretrained=True), 1)
 model_distance.eval()
 model_distance.load_state_dict(torch.load("goal_distance_model.pth"))
 
+model_start_angle = RegressionResNet(models.resnet50(pretrained=True), 1)
+model_start_angle.eval()
+model_start_angle.load_state_dict(torch.load("start_angle_model.pth"))
+
+model_start_tile = RegressionResNet(models.resnet50(pretrained=True), 1)
+model_start_tile.eval()
+model_start_tile.load_state_dict(torch.load("start_tile_model.pth"))
+
 f = open("./testcases/milestone2.json", "r")
 task_dict = json.load(f)
 
 for map_name, task_info in task_dict.items():
-    # if "map4_0" not in map_name:
-    #     continue
+    if "map2_1" not in map_name:
+        continue
 
     actions = []
     total_reward = 0
@@ -130,36 +138,82 @@ for map_name, task_info in task_dict.items():
 
     map_img, goal, start_pos = env_old.get_task_info()
 
-    # start first tile handling
-    robot = LaneFollower(intentions, map_img, goal, visualize=False)
-
     action = [0, 0]
     obs, _, _, info = env_old.step(action)
     env_old.render()
 
-    mode = "Follower"
-    while info["curr_pos"] == start_tile:
-        if mode == "Follower":
-            action = robot(obs, info, action)
-            if robot.state_estimator.can_stop:
-                mode = "RL"
-                obs, _, _, _, info = env.step([0, 0])
-                continue
-            obs, reward, done, info = env_old.step(action)
-            total_reward += reward
-            total_step += 1
-            actions.append(action)
-            env_old.render()
+    image = transform(obs).unsqueeze(dim=0)
+    score = model_start_angle(image)[0][0]
+    obs_list = [transform(obs)]
+    count = 0
+    if score < 0.97:
+        angle = "left"
+        obs, _, _, info = env_old.step([0, 3])
+        env_old.render()
+        image = transform(obs).unsqueeze(dim=0)
+        new_score = model_start_angle(image)[0][0]
+        if new_score > score:
+            count = 10
+            score = new_score
+            obs_list.append(transform(obs))
         else:
-            action = algo_forward_normal.compute_single_action(
-                observation=obs,
-                explore=False,
-            )
-            obs, reward, done, truncated, info = env.step(action)
+            obs, _, _, info = env_old.step([0, -3])
+            env_old.render()
+            angle = "right"
+
+        if angle == "left":
+            action = [0, 0.3]
+        else:
+            action = [0, -0.3]
+
+        while score < 0.97:
+            obs, reward, _, info = env_old.step(action)
+            obs_list.append(transform(obs))
+            env_old.render()
+            image = transform(obs).unsqueeze(dim=0)
+            score = model_start_angle(image)[0][0]
+            count += 1
+
+        a = count // 10
+        b = count % 10
+        for i in range(a):
+            if angle == "left":
+                actions.append([0, 3])
+            else:
+                actions.append([0, -3])
+        if b > 0:
+            if angle == "left":
+                actions.append([0, 0.3 * b])
+            else:
+                actions.append([0, -0.3 * b])
+
+        if map_name == "map2_1":
+            obs, reward, _,  info = env_old.step([-1, 0])
+            actions.append([-1, 0])
             total_reward += reward
             total_step += 1
             actions.append(action)
-            env_old.render()
+            env.render()
+
+    obs_tenser = torch.stack(obs_list[:30])
+    output = model_start_tile(obs_tenser)
+    tile = torch.mean(output)
+    if tile < -0.5:
+        algo = algo_left
+    else:
+        algo = algo_forward_normal
+
+    obs, _, _, _, info = env.step([0, 0])
+    while info["curr_pos"] == start_tile:
+        action = algo.compute_single_action(
+            observation=obs,
+            explore=False,
+        )
+        obs, reward, done, truncated, info = env.step(action)
+        total_reward += reward
+        total_step += 1
+        actions.append(action)
+        env.render()
 
     delta = (info["curr_pos"][0] - start_tile[0], info["curr_pos"][1] - start_tile[1])
     direction = delta_to_direction[delta]
@@ -195,7 +249,7 @@ for map_name, task_info in task_dict.items():
             elif instructions[idx + 1][1] == "forward":
                 cur = info['curr_pos']
                 while cur == info['curr_pos']:
-                    obs, reward, done, truncated, info = env.step([0.65, np.pi])
+                    obs, reward, done, truncated, info = env.step([0.66, np.pi])
                     total_reward += reward
                     total_step += 1
                     actions.append([0.65, np.pi])
