@@ -346,7 +346,7 @@ for map_name, task_info in task_dict.items():
     obs = env_old.render_obs()
     image = transform(obs).unsqueeze(dim=0)
     dist = model_distance(image)[0][0]
-    if dist < 0.4:
+    if dist < 0.38:
         while actions[-1][0] == 0:
             actions.pop(-1)
     else:
@@ -359,7 +359,7 @@ for map_name, task_info in task_dict.items():
             image = transform(obs).unsqueeze(dim=0)
             dist = model_distance(image)[0][0]
 
-            if dist < 0.4:
+            if dist < 0.38:
                 break
 
     location = goal_obj_position[env_old.map_name]
