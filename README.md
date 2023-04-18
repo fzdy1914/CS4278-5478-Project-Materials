@@ -8,7 +8,6 @@
 - torch
 - ray: `pip install -U "ray[rllib]"`
 - edited duckietown: `pip install -e gym-duckietown`
-- edited basic lane follower: `pip install -e CS4278-5478-Project-Basic-Lane-Follower`
 
 ## Brief explanation
 `run_full_m1.py` is the file to generate all control file for m1.
