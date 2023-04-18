@@ -9,7 +9,6 @@ from gymnasium.wrappers import EnvCompatibility
 
 from cnn_model import RegressionResNet
 from find_highest_peak import find_highest_peak
-from intelligent_robots_project import LaneFollower
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.tune import register_env
 from torchvision import models, transforms
@@ -45,7 +44,6 @@ config = PPOConfig().environment("MyDuckietown", env_config={"direction": 3}).fr
 algo_forward_normal = config.build()
 algo_forward_normal.restore("./forward_normal_result/final_hard_best")
 
-right_action = [[-0.8, np.pi]] * 15 + [[1, 0]] * 12
 left_action = [[-0.9, -np.pi]] * 25
 
 config = (
@@ -104,8 +102,8 @@ f = open("./testcases/milestone2.json", "r")
 task_dict = json.load(f)
 
 for map_name, task_info in task_dict.items():
-    if "map2_1" not in map_name:
-        continue
+    # if "map3_1" not in map_name:
+    #     continue
 
     actions = []
     total_reward = 0
@@ -192,8 +190,14 @@ for map_name, task_info in task_dict.items():
             actions.append([-1, 0])
             total_reward += reward
             total_step += 1
-            actions.append(action)
             env.render()
+        if map_name == "map5_1":
+            for i in range(3):
+                obs, reward, _,  info = env_old.step([-1, 0])
+                actions.append([-1, 0])
+                total_reward += reward
+                total_step += 1
+                env.render()
 
     obs_tenser = torch.stack(obs_list[:30])
     output = model_start_tile(obs_tenser)
@@ -232,32 +236,26 @@ for map_name, task_info in task_dict.items():
             break
 
         if instructions[idx][1] == "backward":
-            if instructions[idx + 1][1] == "right":
-                for action in right_action:
-                    obs, reward, done, truncated, info = env.step(action)
-                    total_reward += reward
-                    total_step += 1
-                    actions.append(action)
-                    env.render()
-            elif instructions[idx + 1][1] == "left":
+            if instructions[idx + 1][1] == "left":
                 for action in left_action:
                     obs, reward, done, truncated, info = env.step(action)
                     total_reward += reward
                     total_step += 1
                     actions.append(action)
                     env.render()
-            elif instructions[idx + 1][1] == "forward":
+                    instructions[idx + 1][1] = "forward"
+            elif instructions[idx + 1][1] == "forward" or instructions[idx + 1][1] == "right":
                 cur = info['curr_pos']
                 while cur == info['curr_pos']:
-                    obs, reward, done, truncated, info = env.step([0.66, np.pi])
+                    action = [0.68, np.pi]
+                    obs, reward, done, truncated, info = env.step(action)
                     total_reward += reward
                     total_step += 1
-                    actions.append([0.65, np.pi])
+                    actions.append(action)
                     env.render()
             else:
                 print("unsupported")
 
-            instructions[idx + 1][1] = "forward"
             idx += 1
             continue
 

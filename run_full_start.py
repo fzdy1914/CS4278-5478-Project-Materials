@@ -134,7 +134,7 @@ for map_name, task_info in task_dict.items():
             score = new_score
             obs_list.append(transform(obs))
         else:
-            obs, _, _, info = env_old.step([0, -0.3])
+            obs, _, _, info = env_old.step([0, -3])
             env_old.render()
             angle = "right"
 
