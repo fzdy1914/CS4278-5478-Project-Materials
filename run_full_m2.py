@@ -86,11 +86,11 @@ transform = transforms.Compose([
 ])
 model_angle = RegressionResNet(models.resnet50(pretrained=True), 1)
 model_angle.eval()
-model_angle.load_state_dict(torch.load("angle_model.pth"))
+model_angle.load_state_dict(torch.load("goal_angle_model.pth"))
 
 model_distance = RegressionResNet(models.resnet50(pretrained=True), 1)
 model_distance.eval()
-model_distance.load_state_dict(torch.load("distance_model.pth"))
+model_distance.load_state_dict(torch.load("goal_distance_model.pth"))
 
 f = open("./testcases/milestone2.json", "r")
 task_dict = json.load(f)

@@ -25,7 +25,7 @@ transform = transforms.Compose([
 ])
 model = RegressionResNet(models.resnet50(pretrained=True), 1)
 model.eval()
-model.load_state_dict(torch.load("angle_model.pth"))
+model.load_state_dict(torch.load("goal_angle_model.pth"))
 
 actions = []
 
