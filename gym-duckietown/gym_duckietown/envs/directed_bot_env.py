@@ -16,7 +16,7 @@ DIR_TO_NUM = {
     "goal": 4,
 }
 
-uncertainty = 0.1
+uncertainty = 0.05
 
 goal_obj_position = {
     "map1_0": [5.5, 0.9, 0.2],
@@ -156,7 +156,7 @@ class DirectedBotEnv(DuckietownEnv):
             )
         elif self.direction == 1:
             self.action_space = spaces.Box(
-                low=np.array([.5, -0.5 * np.pi]),
+                low=np.array([.7, 0]),
                 high=np.array([1, np.pi]),
                 dtype=np.float64
             )

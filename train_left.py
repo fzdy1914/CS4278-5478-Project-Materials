@@ -95,7 +95,7 @@ if __name__ == "__main__":
         config.evaluation_num_episodes = 5
 
         algo = config.build()
-        # algo.restore("D:\\left_result\\checkpoint_000105")
+        algo.restore("D:\\left_result\\checkpoint_000030")
         # run manual training loop and print results after each iteration
         for _ in range(args.stop_iters):
             result = algo.train()

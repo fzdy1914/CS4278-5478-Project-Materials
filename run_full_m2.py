@@ -58,7 +58,7 @@ config = (
         .resources(num_gpus=0)
     )
 algo_left = config.build()
-algo_left.restore("./left_result/final_best")
+algo_left.restore("./left_result/final_hard_best")
 
 config = (
         PPOConfig()
